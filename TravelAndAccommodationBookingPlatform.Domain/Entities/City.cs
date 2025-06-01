@@ -11,4 +11,10 @@ public class City
     public string? PostOffice { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public IEnumerable<Hotel> Hotels { get; set; }
+
+    public City()
+    {
+        Hotels = new List<Hotel>();
+    }
 }

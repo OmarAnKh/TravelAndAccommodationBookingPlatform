@@ -4,7 +4,8 @@ namespace TravelAndAccommodationBookingPlatform.Domain.Entities;
 
 public class Location
 {
-    public int Id { get; set; }
+    public Hotel Hotel { get; set; }
+    [Key] public int HotelId { get; set; }
     [Required] public float Longitude { get; set; }
     [Required] public float Latitude { get; set; }
 }

@@ -8,7 +8,6 @@ public class Hotel
     [Required] public string Thumbnail { get; set; }
     [Required] public string Name { get; set; }
     public Location Location { get; set; }
-    [Required] public int LocationId { get; set; }
     public City City { get; set; }
     [Required] public int CityId { get; set; }
     [Required] public string Description { get; set; }

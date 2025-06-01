@@ -7,13 +7,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="DTOs\" />
-      <Folder Include="Interfaces\" />
-      <Folder Include="Services\" />
+        <Folder Include="DTOs\"/>
+        <Folder Include="Interfaces\"/>
+        <Folder Include="Services\"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\TravelAndAccommodationBookingPlatform.Domain\TravelAndAccommodationBookingPlatform.Domain.csproj" />
+        <ProjectReference Include="..\TravelAndAccommodationBookingPlatform.Domain\TravelAndAccommodationBookingPlatform.Domain.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="DotNetEnv" Version="3.1.1"/>
     </ItemGroup>
 
 </Project>
