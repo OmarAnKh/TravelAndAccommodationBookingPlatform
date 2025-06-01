@@ -6,6 +6,7 @@ public class Hotel
 {
     public int Id { get; set; }
     [Required] public string Thumbnail { get; set; }
+    [Required] public string Owner { get; set; }
     [Required] public string Name { get; set; }
     public Location Location { get; set; }
     public City City { get; set; }

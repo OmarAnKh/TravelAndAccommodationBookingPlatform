@@ -2,7 +2,7 @@ using TravelAndAccommodationBookingPlatform.Domain.Entities;
 
 namespace TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 
-public interface ICityRepository : IRepository<City>
+public interface ILocationRepository : IRepository<Location>
 {
 
 }

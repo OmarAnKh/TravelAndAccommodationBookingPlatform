@@ -7,10 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="Repositories\"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\TravelAndAccommodationBookingPlatform.Application\TravelAndAccommodationBookingPlatform.Application.csproj"/>
         <ProjectReference Include="..\TravelAndAccommodationBookingPlatform.Domain\TravelAndAccommodationBookingPlatform.Domain.csproj"/>
     </ItemGroup>

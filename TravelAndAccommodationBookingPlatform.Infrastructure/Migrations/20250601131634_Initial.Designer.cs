@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
 {
     [DbContext(typeof(SqlServerDbContext))]
-    partial class SqlServerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250601131634_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,7 +63,7 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                         {
                             Id = 1,
                             Country = "France",
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3005),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(284),
                             Name = "Paris",
                             PostOffice = "75000",
                             Thumbnail = "paris.jpg"
@@ -69,7 +72,7 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                         {
                             Id = 2,
                             Country = "Japan",
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3010),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(288),
                             Name = "Tokyo",
                             PostOffice = "100-0001",
                             Thumbnail = "tokyo.jpg"
@@ -78,7 +81,7 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                         {
                             Id = 3,
                             Country = "USA",
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3012),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(290),
                             Name = "New York",
                             PostOffice = "10001",
                             Thumbnail = "nyc.jpg"
@@ -87,7 +90,7 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                         {
                             Id = 4,
                             Country = "Italy",
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3014),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(292),
                             Name = "Rome",
                             PostOffice = "00100",
                             Thumbnail = "rome.jpg"
@@ -96,7 +99,7 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                         {
                             Id = 5,
                             Country = "Spain",
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3015),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(293),
                             Name = "Barcelona",
                             PostOffice = "08001",
                             Thumbnail = "barcelona.jpg"
@@ -147,56 +150,56 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                         {
                             Id = 1,
                             CityId = 1,
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3342),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(482),
                             Description = "Near Eiffel Tower",
                             Name = "Eiffel Hotel",
                             Owner = "Anan Khalili",
                             Thumbnail = "eiffel_hotel.jpg",
-                            UpdatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3343)
+                            UpdatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(482)
                         },
                         new
                         {
                             Id = 2,
                             CityId = 2,
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3346),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(484),
                             Description = "In the heart of Tokyo",
                             Name = "Shibuya Inn",
                             Owner = "Idk",
                             Thumbnail = "shibuya_inn.jpg",
-                            UpdatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3346)
+                            UpdatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(485)
                         },
                         new
                         {
                             Id = 3,
                             CityId = 3,
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3348),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(486),
                             Description = "Close to Broadway",
                             Name = "Times Square Hotel",
                             Owner = "Ahmad",
                             Thumbnail = "ts_hotel.jpg",
-                            UpdatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3348)
+                            UpdatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(487)
                         },
                         new
                         {
                             Id = 4,
                             CityId = 4,
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3354),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(488),
                             Description = "View of the Colosseum",
                             Name = "Colosseum Suites",
                             Owner = "Rahaf",
                             Thumbnail = "colosseum.jpg",
-                            UpdatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3355)
+                            UpdatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(488)
                         },
                         new
                         {
                             Id = 5,
                             CityId = 5,
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3356),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(490),
                             Description = "Near Gaudi's masterpiece",
                             Name = "Sagrada Familia Hotel",
                             Owner = "YOU",
                             Thumbnail = "sagrada.jpg",
-                            UpdatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3356)
+                            UpdatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(491)
                         });
                 });
 
@@ -368,7 +371,7 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                             Adults = 0,
                             Availability = 1,
                             Children = 0,
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3385),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(512),
                             HotelId = 1,
                             Price = 120f,
                             RoomType = 1
@@ -379,7 +382,7 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                             Adults = 0,
                             Availability = 2,
                             Children = 0,
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3387),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(514),
                             HotelId = 2,
                             Price = 200f,
                             RoomType = 6
@@ -390,7 +393,7 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                             Adults = 0,
                             Availability = 1,
                             Children = 0,
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3390),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(516),
                             HotelId = 3,
                             Price = 300f,
                             RoomType = 4
@@ -401,7 +404,7 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                             Adults = 0,
                             Availability = 2,
                             Children = 0,
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3393),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(517),
                             HotelId = 4,
                             Price = 100f,
                             RoomType = 1
@@ -412,7 +415,7 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                             Adults = 0,
                             Availability = 1,
                             Children = 0,
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3395),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(518),
                             HotelId = 5,
                             Price = 180f,
                             RoomType = 6
@@ -447,9 +450,6 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -462,51 +462,46 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3308),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(455),
                             Email = "alice@example.com",
                             Password = "pass123",
                             Role = 1,
-                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Username = "alice"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3311),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(457),
                             Email = "bob@example.com",
                             Password = "pass123",
                             Role = 1,
-                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Username = "bob"
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3314),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(459),
                             Email = "carol@example.com",
                             Password = "pass123",
                             Role = 1,
-                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Username = "carol"
                         },
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3315),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(460),
                             Email = "dave@example.com",
                             Password = "pass123",
                             Role = 1,
-                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Username = "dave"
                         },
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2025, 6, 1, 15, 17, 38, 5, DateTimeKind.Utc).AddTicks(3316),
+                            CreatedAt = new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(461),
                             Email = "eve@example.com",
                             Password = "pass123",
                             Role = 1,
-                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Username = "eve"
                         });
                 });

@@ -57,6 +57,7 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Thumbnail = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Owner = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CityId = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -102,7 +103,8 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Rate = table.Column<float>(type: "real", nullable: true),
                     ImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -133,8 +135,9 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                     Price = table.Column<float>(type: "real", nullable: false),
                     Thumbnail = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Availability = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Capacity = table.Column<int>(type: "int", nullable: true),
+                    Availability = table.Column<int>(type: "int", nullable: false),
+                    Adults = table.Column<int>(type: "int", nullable: false),
+                    Children = table.Column<int>(type: "int", nullable: false),
                     RoomNumber = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -185,11 +188,11 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                 columns: new[] { "Id", "Country", "CreatedAt", "Name", "PostOffice", "Thumbnail", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, "France", new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(1963), "Paris", "75000", "paris.jpg", null },
-                    { 2, "Japan", new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(1967), "Tokyo", "100-0001", "tokyo.jpg", null },
-                    { 3, "USA", new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(1969), "New York", "10001", "nyc.jpg", null },
-                    { 4, "Italy", new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(1970), "Rome", "00100", "rome.jpg", null },
-                    { 5, "Spain", new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(1972), "Barcelona", "08001", "barcelona.jpg", null }
+                    { 1, "France", new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(284), "Paris", "75000", "paris.jpg", null },
+                    { 2, "Japan", new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(288), "Tokyo", "100-0001", "tokyo.jpg", null },
+                    { 3, "USA", new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(290), "New York", "10001", "nyc.jpg", null },
+                    { 4, "Italy", new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(292), "Rome", "00100", "rome.jpg", null },
+                    { 5, "Spain", new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(293), "Barcelona", "08001", "barcelona.jpg", null }
                 });
 
             migrationBuilder.InsertData(
@@ -197,23 +200,23 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
                 columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Password", "PhoneNumber", "Role", "Username" },
                 values: new object[,]
                 {
-                    { 1, null, new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2235), "alice@example.com", "pass123", null, 1, "alice" },
-                    { 2, null, new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2237), "bob@example.com", "pass123", null, 1, "bob" },
-                    { 3, null, new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2239), "carol@example.com", "pass123", null, 1, "carol" },
-                    { 4, null, new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2240), "dave@example.com", "pass123", null, 1, "dave" },
-                    { 5, null, new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2241), "eve@example.com", "pass123", null, 1, "eve" }
+                    { 1, null, new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(455), "alice@example.com", "pass123", null, 1, "alice" },
+                    { 2, null, new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(457), "bob@example.com", "pass123", null, 1, "bob" },
+                    { 3, null, new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(459), "carol@example.com", "pass123", null, 1, "carol" },
+                    { 4, null, new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(460), "dave@example.com", "pass123", null, 1, "dave" },
+                    { 5, null, new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(461), "eve@example.com", "pass123", null, 1, "eve" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Hotels",
-                columns: new[] { "Id", "CityId", "CreatedAt", "Description", "Name", "Thumbnail", "UpdatedAt" },
+                columns: new[] { "Id", "CityId", "CreatedAt", "Description", "Name", "Owner", "Thumbnail", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, 1, new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2263), "Near Eiffel Tower", "Eiffel Hotel", "eiffel_hotel.jpg", new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2264) },
-                    { 2, 2, new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2266), "In the heart of Tokyo", "Shibuya Inn", "shibuya_inn.jpg", new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2266) },
-                    { 3, 3, new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2268), "Close to Broadway", "Times Square Hotel", "ts_hotel.jpg", new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2268) },
-                    { 4, 4, new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2270), "View of the Colosseum", "Colosseum Suites", "colosseum.jpg", new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2270) },
-                    { 5, 5, new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2271), "Near Gaudi's masterpiece", "Sagrada Familia Hotel", "sagrada.jpg", new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2272) }
+                    { 1, 1, new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(482), "Near Eiffel Tower", "Eiffel Hotel", "Anan Khalili", "eiffel_hotel.jpg", new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(482) },
+                    { 2, 2, new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(484), "In the heart of Tokyo", "Shibuya Inn", "Idk", "shibuya_inn.jpg", new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(485) },
+                    { 3, 3, new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(486), "Close to Broadway", "Times Square Hotel", "Ahmad", "ts_hotel.jpg", new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(487) },
+                    { 4, 4, new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(488), "View of the Colosseum", "Colosseum Suites", "Rahaf", "colosseum.jpg", new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(488) },
+                    { 5, 5, new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(490), "Near Gaudi's masterpiece", "Sagrada Familia Hotel", "YOU", "sagrada.jpg", new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(491) }
                 });
 
             migrationBuilder.InsertData(
@@ -230,14 +233,14 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Migrations
 
             migrationBuilder.InsertData(
                 table: "Rooms",
-                columns: new[] { "Id", "Availability", "Capacity", "CreatedAt", "CustomRoomTypeName", "Description", "HotelId", "Price", "RoomNumber", "RoomType", "Thumbnail", "UpdatedAt" },
+                columns: new[] { "Id", "Adults", "Availability", "Children", "CreatedAt", "CustomRoomTypeName", "Description", "HotelId", "Price", "RoomNumber", "RoomType", "Thumbnail", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, "Available", null, new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2297), null, null, 1, 120f, null, 1, null, null },
-                    { 2, "Available", null, new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2298), null, null, 2, 200f, null, 6, null, null },
-                    { 3, "Available", null, new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2300), null, null, 3, 300f, null, 4, null, null },
-                    { 4, "Available", null, new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2301), null, null, 4, 100f, null, 1, null, null },
-                    { 5, "Available", null, new DateTime(2025, 6, 1, 8, 27, 22, 4, DateTimeKind.Utc).AddTicks(2302), null, null, 5, 180f, null, 6, null, null }
+                    { 1, 0, 1, 0, new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(512), null, null, 1, 120f, null, 1, null, null },
+                    { 2, 0, 2, 0, new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(514), null, null, 2, 200f, null, 6, null, null },
+                    { 3, 0, 1, 0, new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(516), null, null, 3, 300f, null, 4, null, null },
+                    { 4, 0, 2, 0, new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(517), null, null, 4, 100f, null, 1, null, null },
+                    { 5, 0, 1, 0, new DateTime(2025, 6, 1, 13, 16, 34, 593, DateTimeKind.Utc).AddTicks(518), null, null, 5, 180f, null, 6, null, null }
                 });
 
             migrationBuilder.CreateIndex(

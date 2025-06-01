@@ -13,6 +13,7 @@ public class User
     public DateTime? BirthDate { get; set; }
     public string? PhoneNumber { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
     public IEnumerable<Review> Reviews { get; set; }
     public IEnumerable<Reservation> Reservations { get; set; }
     public User()

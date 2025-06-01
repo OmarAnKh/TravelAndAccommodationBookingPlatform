@@ -2,6 +2,6 @@ namespace TravelAndAccommodationBookingPlatform.Domain.Enums;
 
 public enum Availability
 {
-    Availability = 1,
+    Available = 1,
     Unavailable = 2
 }

@@ -85,19 +85,19 @@ public class SqlServerDbContext : DbContext
         );
 
         modelBuilder.Entity<Hotel>().HasData(
-            new Hotel { Id = 1, Name = "Eiffel Hotel", CityId = 1, Description = "Near Eiffel Tower", Thumbnail = "eiffel_hotel.jpg", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-            new Hotel { Id = 2, Name = "Shibuya Inn", CityId = 2, Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-            new Hotel { Id = 3, Name = "Times Square Hotel", CityId = 3, Description = "Close to Broadway", Thumbnail = "ts_hotel.jpg", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-            new Hotel { Id = 4, Name = "Colosseum Suites", CityId = 4, Description = "View of the Colosseum", Thumbnail = "colosseum.jpg", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-            new Hotel { Id = 5, Name = "Sagrada Familia Hotel", CityId = 5, Description = "Near Gaudi's masterpiece", Thumbnail = "sagrada.jpg", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+            new Hotel { Id = 1, Name = "Eiffel Hotel", CityId = 1, Owner = "Anan Khalili", Description = "Near Eiffel Tower", Thumbnail = "eiffel_hotel.jpg", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new Hotel { Id = 2, Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new Hotel { Id = 3, Name = "Times Square Hotel", CityId = 3, Owner = "Ahmad", Description = "Close to Broadway", Thumbnail = "ts_hotel.jpg", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new Hotel { Id = 4, Name = "Colosseum Suites", CityId = 4, Owner = "Rahaf", Description = "View of the Colosseum", Thumbnail = "colosseum.jpg", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new Hotel { Id = 5, Name = "Sagrada Familia Hotel", CityId = 5, Owner = "YOU", Description = "Near Gaudi's masterpiece", Thumbnail = "sagrada.jpg", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
         );
 
         modelBuilder.Entity<Room>().HasData(
-            new Room { Id = 1, HotelId = 1, RoomType = RoomType.Single, Price = 120, Availability = "Available", CreatedAt = DateTime.UtcNow },
-            new Room { Id = 2, HotelId = 2, RoomType = RoomType.Deluxe, Price = 200, Availability = "Available", CreatedAt = DateTime.UtcNow },
-            new Room { Id = 3, HotelId = 3, RoomType = RoomType.Suite, Price = 300, Availability = "Available", CreatedAt = DateTime.UtcNow },
-            new Room { Id = 4, HotelId = 4, RoomType = RoomType.Single, Price = 100, Availability = "Available", CreatedAt = DateTime.UtcNow },
-            new Room { Id = 5, HotelId = 5, RoomType = RoomType.Deluxe, Price = 180, Availability = "Available", CreatedAt = DateTime.UtcNow }
+            new Room { Id = 1, HotelId = 1, RoomType = RoomType.Single, Price = 120, Availability = Availability.Available, CreatedAt = DateTime.UtcNow },
+            new Room { Id = 2, HotelId = 2, RoomType = RoomType.Deluxe, Price = 200, Availability = Availability.Unavailable, CreatedAt = DateTime.UtcNow },
+            new Room { Id = 3, HotelId = 3, RoomType = RoomType.Suite, Price = 300, Availability = Availability.Available, CreatedAt = DateTime.UtcNow },
+            new Room { Id = 4, HotelId = 4, RoomType = RoomType.Single, Price = 100, Availability = Availability.Unavailable, CreatedAt = DateTime.UtcNow },
+            new Room { Id = 5, HotelId = 5, RoomType = RoomType.Deluxe, Price = 180, Availability = Availability.Available, CreatedAt = DateTime.UtcNow }
         );
 
     }
