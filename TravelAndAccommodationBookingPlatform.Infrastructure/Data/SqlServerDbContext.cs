@@ -6,27 +6,42 @@ namespace TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 
 public class SqlServerDbContext : DbContext
 {
-    public DbSet<City> Cities { get; set; }
-    public DbSet<Location> Locations { get; set; }
-    public DbSet<Hotel> Hotels { get; set; }
-    public DbSet<Room> Rooms { get; set; }
-    public DbSet<Reservation> Reservations { get; set; }
-    public DbSet<Review> Reviews { get; set; }
-    public DbSet<User> Users { get; set; }
+    public SqlServerDbContext(DbContextOptions<SqlServerDbContext> options) : base(options)
+    {
+    }
+
+    // Parameterless constructor for cases where options are configured in OnConfiguring
+    public SqlServerDbContext()
+    {
+    }
+
+    public virtual DbSet<City> Cities { get; set; }
+    public virtual DbSet<Location> Locations { get; set; }
+    public virtual DbSet<Hotel> Hotels { get; set; }
+    public virtual DbSet<Room> Rooms { get; set; }
+    public virtual DbSet<Reservation> Reservations { get; set; }
+    public virtual DbSet<Review> Reviews { get; set; }
+    public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        DotNetEnv.Env.Load();
-        optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("SQLSERVERCONNECTIONSTRING"));
+        // Only configure if no options have been provided (for backward compatibility)
+        if (!optionsBuilder.IsConfigured)
+        {
+            DotNetEnv.Env.Load();
+            optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("SQLSERVERCONNECTIONSTRING"));
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Hotel-City relationship
         modelBuilder.Entity<Hotel>()
             .HasOne(hotel => hotel.City)
             .WithMany(city => city.Hotels)
             .HasForeignKey(hotel => hotel.CityId);
 
+        // Review composite key and relationships
         modelBuilder.Entity<Review>()
             .HasKey(r => new { r.UserId, r.HotelId });
 
@@ -35,17 +50,18 @@ public class SqlServerDbContext : DbContext
             .WithMany(hotel => hotel.Reviews)
             .HasForeignKey(r => r.HotelId);
 
-
         modelBuilder.Entity<Review>()
             .HasOne<User>(r => r.User)
             .WithMany(u => u.Reviews)
             .HasForeignKey(r => r.UserId);
 
+        // Room-Hotel relationship
         modelBuilder.Entity<Room>()
             .HasOne(r => r.Hotel)
             .WithMany(hotel => hotel.Rooms)
             .HasForeignKey(r => r.HotelId);
 
+        // Reservation composite key and relationships
         modelBuilder.Entity<Reservation>()
             .HasKey(r => new { r.UserId, r.RoomId });
 
@@ -59,13 +75,23 @@ public class SqlServerDbContext : DbContext
             .WithMany(r => r.Reservations)
             .HasForeignKey(r => r.RoomId);
 
+        // Seed data - only add if not in testing environment
+        if (!Database.ProviderName.Contains("InMemory"))
+        {
+            SeedData(modelBuilder);
+        }
+    }
+
+    private void SeedData(ModelBuilder modelBuilder)
+    {
+        var baseDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         modelBuilder.Entity<City>().HasData(
-            new City { Id = 1, Name = "Paris", Country = "France", Thumbnail = "paris.jpg", PostOffice = "75000", CreatedAt = DateTime.UtcNow },
-            new City { Id = 2, Name = "Tokyo", Country = "Japan", Thumbnail = "tokyo.jpg", PostOffice = "100-0001", CreatedAt = DateTime.UtcNow },
-            new City { Id = 3, Name = "New York", Country = "USA", Thumbnail = "nyc.jpg", PostOffice = "10001", CreatedAt = DateTime.UtcNow },
-            new City { Id = 4, Name = "Rome", Country = "Italy", Thumbnail = "rome.jpg", PostOffice = "00100", CreatedAt = DateTime.UtcNow },
-            new City { Id = 5, Name = "Barcelona", Country = "Spain", Thumbnail = "barcelona.jpg", PostOffice = "08001", CreatedAt = DateTime.UtcNow }
+            new City { Id = 1, Name = "Paris", Country = "France", Thumbnail = "paris.jpg", PostOffice = "75000", CreatedAt = baseDate },
+            new City { Id = 2, Name = "Tokyo", Country = "Japan", Thumbnail = "tokyo.jpg", PostOffice = "100-0001", CreatedAt = baseDate },
+            new City { Id = 3, Name = "New York", Country = "USA", Thumbnail = "nyc.jpg", PostOffice = "10001", CreatedAt = baseDate },
+            new City { Id = 4, Name = "Rome", Country = "Italy", Thumbnail = "rome.jpg", PostOffice = "00100", CreatedAt = baseDate },
+            new City { Id = 5, Name = "Barcelona", Country = "Spain", Thumbnail = "barcelona.jpg", PostOffice = "08001", CreatedAt = baseDate }
         );
 
         modelBuilder.Entity<Location>().HasData(
@@ -77,28 +103,27 @@ public class SqlServerDbContext : DbContext
         );
 
         modelBuilder.Entity<User>().HasData(
-            new User { Id = 1, Username = "alice", Password = "pass123", Email = "alice@example.com", CreatedAt = DateTime.UtcNow },
-            new User { Id = 2, Username = "bob", Password = "pass123", Email = "bob@example.com", CreatedAt = DateTime.UtcNow },
-            new User { Id = 3, Username = "carol", Password = "pass123", Email = "carol@example.com", CreatedAt = DateTime.UtcNow },
-            new User { Id = 4, Username = "dave", Password = "pass123", Email = "dave@example.com", CreatedAt = DateTime.UtcNow },
-            new User { Id = 5, Username = "eve", Password = "pass123", Email = "eve@example.com", CreatedAt = DateTime.UtcNow }
+            new User { Id = 1, Username = "alice", Password = "pass123", Email = "alice@example.com", CreatedAt = baseDate },
+            new User { Id = 2, Username = "bob", Password = "pass123", Email = "bob@example.com", CreatedAt = baseDate },
+            new User { Id = 3, Username = "carol", Password = "pass123", Email = "carol@example.com", CreatedAt = baseDate },
+            new User { Id = 4, Username = "dave", Password = "pass123", Email = "dave@example.com", CreatedAt = baseDate },
+            new User { Id = 5, Username = "eve", Password = "pass123", Email = "eve@example.com", CreatedAt = baseDate }
         );
 
         modelBuilder.Entity<Hotel>().HasData(
-            new Hotel { Id = 1, Name = "Eiffel Hotel", CityId = 1, Owner = "Anan Khalili", Description = "Near Eiffel Tower", Thumbnail = "eiffel_hotel.jpg", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-            new Hotel { Id = 2, Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-            new Hotel { Id = 3, Name = "Times Square Hotel", CityId = 3, Owner = "Ahmad", Description = "Close to Broadway", Thumbnail = "ts_hotel.jpg", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-            new Hotel { Id = 4, Name = "Colosseum Suites", CityId = 4, Owner = "Rahaf", Description = "View of the Colosseum", Thumbnail = "colosseum.jpg", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-            new Hotel { Id = 5, Name = "Sagrada Familia Hotel", CityId = 5, Owner = "YOU", Description = "Near Gaudi's masterpiece", Thumbnail = "sagrada.jpg", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+            new Hotel { Id = 1, Name = "Eiffel Hotel", CityId = 1, Owner = "Anan Khalili", Description = "Near Eiffel Tower", Thumbnail = "eiffel_hotel.jpg", CreatedAt = baseDate, UpdatedAt = baseDate },
+            new Hotel { Id = 2, Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg", CreatedAt = baseDate, UpdatedAt = baseDate },
+            new Hotel { Id = 3, Name = "Times Square Hotel", CityId = 3, Owner = "Ahmad", Description = "Close to Broadway", Thumbnail = "ts_hotel.jpg", CreatedAt = baseDate, UpdatedAt = baseDate },
+            new Hotel { Id = 4, Name = "Colosseum Suites", CityId = 4, Owner = "Rahaf", Description = "View of the Colosseum", Thumbnail = "colosseum.jpg", CreatedAt = baseDate, UpdatedAt = baseDate },
+            new Hotel { Id = 5, Name = "Sagrada Familia Hotel", CityId = 5, Owner = "YOU", Description = "Near Gaudi's masterpiece", Thumbnail = "sagrada.jpg", CreatedAt = baseDate, UpdatedAt = baseDate }
         );
 
         modelBuilder.Entity<Room>().HasData(
-            new Room { Id = 1, HotelId = 1, RoomType = RoomType.Single, Price = 120, Availability = Availability.Available, CreatedAt = DateTime.UtcNow },
-            new Room { Id = 2, HotelId = 2, RoomType = RoomType.Deluxe, Price = 200, Availability = Availability.Unavailable, CreatedAt = DateTime.UtcNow },
-            new Room { Id = 3, HotelId = 3, RoomType = RoomType.Suite, Price = 300, Availability = Availability.Available, CreatedAt = DateTime.UtcNow },
-            new Room { Id = 4, HotelId = 4, RoomType = RoomType.Single, Price = 100, Availability = Availability.Unavailable, CreatedAt = DateTime.UtcNow },
-            new Room { Id = 5, HotelId = 5, RoomType = RoomType.Deluxe, Price = 180, Availability = Availability.Available, CreatedAt = DateTime.UtcNow }
+            new Room { Id = 1, HotelId = 1, RoomType = RoomType.Single, Price = 120, Availability = Availability.Available, CreatedAt = baseDate },
+            new Room { Id = 2, HotelId = 2, RoomType = RoomType.Deluxe, Price = 200, Availability = Availability.Unavailable, CreatedAt = baseDate },
+            new Room { Id = 3, HotelId = 3, RoomType = RoomType.Suite, Price = 300, Availability = Availability.Available, CreatedAt = baseDate },
+            new Room { Id = 4, HotelId = 4, RoomType = RoomType.Single, Price = 100, Availability = Availability.Unavailable, CreatedAt = baseDate },
+            new Room { Id = 5, HotelId = 5, RoomType = RoomType.Deluxe, Price = 180, Availability = Availability.Available, CreatedAt = baseDate }
         );
-
     }
 }

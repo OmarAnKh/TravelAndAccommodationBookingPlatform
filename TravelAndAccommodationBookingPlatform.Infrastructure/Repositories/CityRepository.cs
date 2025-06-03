@@ -44,10 +44,16 @@ public class CityRepository : ICityRepository
         await _context.Cities.AddAsync(entity);
         return entity;
     }
-    public City Update(City entity)
+    public async Task<City?> UpdateAsync(City entity)
     {
-        _context.Cities.Update(entity);
-        return entity;
+
+        var city = await _context.Cities.FirstOrDefaultAsync(c => c.Id == entity.Id);
+        if (city == null)
+        {
+            return null;
+        }
+        _context.Entry(city).CurrentValues.SetValues(entity);
+        return city;
     }
     public async Task<City?> Delete(int id)
     {
@@ -60,7 +66,7 @@ public class CityRepository : ICityRepository
         return city;
     }
 
-    public async Task<int> SaveChanges()
+    public async Task<int> SaveChangesAsync()
     {
         return await _context.SaveChangesAsync();
     }

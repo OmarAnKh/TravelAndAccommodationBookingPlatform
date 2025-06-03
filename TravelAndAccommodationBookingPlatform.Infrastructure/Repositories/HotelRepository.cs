@@ -44,12 +44,14 @@ public class HotelRepository : IHotelRepository
         await _context.Hotels.AddAsync(entity);
         return entity;
     }
-    public Hotel Update(Hotel entity)
+    public Task<Hotel?> UpdateAsync(Hotel entity)
     {
         var entityAfterUpdate = _context.Hotels.Update(entity).Entity;
 
-        return entityAfterUpdate;
+        // return entityAfterUpdate;
+        return Task.FromResult(entityAfterUpdate);
     }
+
     public async Task<Hotel?> Delete(int id)
     {
         var hotel = await _context.Hotels.FirstOrDefaultAsync(h => h.Id == id);
@@ -60,7 +62,7 @@ public class HotelRepository : IHotelRepository
         _context.Hotels.Remove(hotel);
         return hotel;
     }
-    public async Task<int> SaveChanges()
+    public async Task<int> SaveChangesAsync()
     {
         return await _context.SaveChangesAsync();
     }
