@@ -1,0 +1,256 @@
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using TravelAndAccommodationBookingPlatform.Application.Common.QueryParameters;
+using TravelAndAccommodationBookingPlatform.Domain.Entities;
+using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
+using TravelAndAccommodationBookingPlatform.Infrastructure.Repositories;
+
+namespace TravelAndAccommodationBookingPlatform.Tests.Integration.Repositories;
+
+public class HotelRepositoryTests : IDisposable
+{
+    private readonly HotelRepository _hotelRepository;
+    private readonly SqlServerDbContext _context;
+
+    readonly List<Hotel> _hotels = new List<Hotel>()
+    {
+        new Hotel { Name = "Eiffel Hotel", CityId = 1, Owner = "Anan Khalili", Description = "Near Eiffel Tower", Thumbnail = "eiffel_hotel.jpg" },
+        new Hotel { Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg" },
+        new Hotel { Name = "Times Square Hotel", CityId = 3, Owner = "Ahmad", Description = "Close to Broadway", Thumbnail = "ts_hotel.jpg" },
+        new Hotel { Name = "Colosseum Suites", CityId = 4, Owner = "Rahaf", Description = "View of the Colosseum", Thumbnail = "colosseum.jpg" },
+        new Hotel { Name = "Sagrada Familia Hotel", CityId = 5, Owner = "YOU", Description = "Near Gaudi's masterpiece", Thumbnail = "sagrada.jpg" }
+    };
+
+    public HotelRepositoryTests()
+    {
+        var options = new DbContextOptionsBuilder<SqlServerDbContext>()
+            .UseInMemoryDatabase(databaseName: $"HotelRepository{Guid.NewGuid().ToString()}")
+            .Options;
+        _context = new SqlServerDbContext(options);
+        _hotelRepository = new HotelRepository(_context);
+    }
+
+    [Theory]
+    [InlineData(1, 10)]
+    [InlineData(2, 2)]
+    [InlineData(2, 10)]
+    public async Task GetAll_ReturnsPagedHotels_WhenNoSearchTermProvided(int pageNumber, int pageSize)
+    {
+        // Arrange
+        _context.Hotels.RemoveRange(_context.Hotels);
+        await _context.Hotels.AddRangeAsync(_hotels);
+        await _context.SaveChangesAsync();
+
+        var queryParameters = new HotelQueryParameters
+        {
+            Page = pageNumber,
+            PageSize = pageSize,
+        };
+
+        // Act
+        var (entities, paginationMetaData) = await _hotelRepository.GetAll(queryParameters);
+        var resultList = entities.ToList();
+
+        int skip = (pageNumber - 1) * pageSize;
+        int expectedCount = Math.Max(0, Math.Min(pageSize, _hotels.Count - skip));
+
+        // Assert
+        resultList.Count.Should().Be(expectedCount);
+        paginationMetaData.CurrentPage.Should().Be(pageNumber);
+    }
+
+    [Theory]
+    [InlineData("Eiffel Hotel", 1, 10)]
+    [InlineData("Shibuya Inn", 2, 2)]
+    [InlineData("UNKNOWN", 1, 10)]
+    public async Task GetAll_WithSearchTerm_ShouldReturnFilteredCities(string searchTerm, int pageNumber, int pageSize)
+    {
+        //Arrange
+        _context.Hotels.RemoveRange(_context.Hotels);
+        await _context.Hotels.AddRangeAsync(_hotels);
+        await _context.SaveChangesAsync();
+        var queryParameters = new HotelQueryParameters
+        {
+            Page = pageNumber,
+            PageSize = pageSize,
+            SearchTerm = searchTerm
+        };
+
+        //Act
+        var (entities, paginationMetaData) = await _hotelRepository.GetAll(queryParameters);
+        var resultList = entities.ToList();
+
+        var expectedResult = _hotels.Where(hotel => hotel.Name.Contains(searchTerm)
+                                                    || hotel.Description.Contains(searchTerm)).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToList();
+
+        //Assert
+        resultList.Count.Should().Be(expectedResult.Count);
+        resultList.Should().BeEquivalentTo(expectedResult);
+        paginationMetaData.CurrentPage.Should().Be(pageNumber);
+    }
+
+    [Fact]
+    public async Task GetAll_WithNullParameters_ShouldUseDefaults()
+    {
+        // Arrange
+        // Act
+        var (result, paginationMetaData) = await _hotelRepository.GetAll(null);
+
+        // Assert
+        paginationMetaData.CurrentPage.Should().Be(1);
+        paginationMetaData.PageSize.Should().Be(10);
+    }
+
+    [Fact]
+    public async Task GetById_WithValidId_ShouldReturnHotel()
+    {
+        // Arrange
+        await _context.Hotels.AddRangeAsync(_hotels);
+        await _context.SaveChangesAsync();
+        var cityId = _hotels[0].Id;
+        // Act
+        var result = await _hotelRepository.GetById(cityId);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeEquivalentTo(_hotels.FirstOrDefault(c => c.Id == cityId));
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(null)]
+    public async Task GetById_WithInvalidId_ShouldReturnNull(int hotelId)
+    {
+        // Arrange
+        await _context.Hotels.AddRangeAsync(_hotels);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _hotelRepository.GetById(hotelId);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Create_WithValidHotel_ShouldAddCityToContext()
+    {
+        //Arrange
+
+        var hotel = new Hotel { Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg" };
+
+        //Act
+        var result = await _hotelRepository.Create(hotel);
+        await _hotelRepository.SaveChangesAsync();
+
+        //Assert
+        result.Should().BeEquivalentTo(hotel);
+        _context.Hotels.Should().Contain(hotel);
+
+    }
+
+    [Fact]
+    public async Task Update_WithValidHotel_ShouldUpdateCityInContext()
+    {
+        //Arrange
+        await _context.Hotels.AddRangeAsync(_hotels);
+        await _context.SaveChangesAsync();
+        var hotel = await _hotelRepository.GetById(_hotels[0].Id);
+        hotel.Name = "Golden view";
+
+        //Act
+        var result = await _hotelRepository.UpdateAsync(hotel);
+        await _hotelRepository.SaveChangesAsync();
+        result.Should().BeEquivalentTo(hotel);
+
+    }
+
+
+    [Fact]
+    public async Task Update_WithInvalidHotel_ShouldUpdateCityInContext()
+    {
+        //Arrange
+        var hotel = new Hotel { Id = -1, Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg" };
+
+        //Act
+        var updateResult = await _hotelRepository.UpdateAsync(hotel);
+        var saveChangesResult = await _hotelRepository.SaveChangesAsync();
+
+        //Assert
+        updateResult.Should().BeNull();
+        saveChangesResult.Should().Be(0);
+    }
+
+
+    [Fact]
+    public async Task Delete_WithValidHotel_ShouldDeleteCityInContext()
+    {
+        //Arrange
+        await _context.Hotels.AddRangeAsync(_hotels);
+        await _context.SaveChangesAsync();
+        var hotel = await _hotelRepository.GetById(_hotels[0].Id);
+
+        //Act
+        var result = await _hotelRepository.Delete(hotel.Id);
+        var saveChangesResult = await _hotelRepository.SaveChangesAsync();
+        var getResult = await _hotelRepository.GetById(hotel.Id);
+
+        //Assert
+        result.Should().NotBeNull();
+        saveChangesResult.Should().Be(1);
+        getResult.Should().BeNull();
+
+    }
+
+    [Fact]
+    public async Task Delete_WithInvalidHotel_ShouldReturnNull()
+    {
+        //Arrange
+        var hotel = new Hotel { Id = -1, Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg" };
+
+        //Act
+        var deleteResult = await _hotelRepository.Delete(hotel.Id);
+        var saveChangesResult = await _hotelRepository.SaveChangesAsync();
+
+        //Assert
+        deleteResult.Should().BeNull();
+        saveChangesResult.Should().Be(0);
+    }
+
+
+    [Fact]
+    public async Task SaveChanges_ShouldReturnNumberOfAffectedEntries()
+    {
+        // Arrange
+        var hotels = new List<Hotel>
+        {
+            new Hotel { Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg" },
+            new Hotel { Name = "Times Square Hotel", CityId = 3, Owner = "Ahmad", Description = "Close to Broadway", Thumbnail = "ts_hotel.jpg" }
+        };
+
+        await _context.Hotels.AddRangeAsync(hotels);
+
+        // Act
+        var result = await _hotelRepository.SaveChangesAsync();
+
+        // Assert
+        result.Should().Be(hotels.Count);
+    }
+
+
+    [Fact]
+    public async Task SaveChanges_WithNoChanges_ShouldReturnZero()
+    {
+        // Act
+        var result = await _hotelRepository.SaveChangesAsync();
+
+        // Assert
+        result.Should().Be(0);
+    }
+
+    public void Dispose()
+    {
+        _context.Dispose();
+
+    }
+}

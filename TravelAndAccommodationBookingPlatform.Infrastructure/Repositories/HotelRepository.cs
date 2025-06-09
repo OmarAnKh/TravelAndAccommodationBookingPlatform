@@ -44,12 +44,16 @@ public class HotelRepository : IHotelRepository
         await _context.Hotels.AddAsync(entity);
         return entity;
     }
-    public Task<Hotel?> UpdateAsync(Hotel entity)
+    public async Task<Hotel?> UpdateAsync(Hotel entity)
     {
-        var entityAfterUpdate = _context.Hotels.Update(entity).Entity;
 
-        // return entityAfterUpdate;
-        return Task.FromResult(entityAfterUpdate);
+        var hotel = await _context.Hotels.FirstOrDefaultAsync(c => c.Id == entity.Id);
+        if (hotel == null)
+        {
+            return null;
+        }
+        _context.Entry(hotel).CurrentValues.SetValues(entity);
+        return hotel;
     }
 
     public async Task<Hotel?> Delete(int id)
