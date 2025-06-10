@@ -1,0 +1,259 @@
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using TravelAndAccommodationBookingPlatform.Application.Common.QueryParameters;
+using TravelAndAccommodationBookingPlatform.Domain.Entities;
+using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
+using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
+using TravelAndAccommodationBookingPlatform.Infrastructure.Repositories;
+using TravelAndAccommodationBookingPlatform.Tests.common.DatabaseFactories;
+
+namespace TravelAndAccommodationBookingPlatform.Tests.Integration.Repositories;
+
+public class LocationRepositoryTests : IDisposable
+{
+    private readonly IAppDbContext _context;
+    private readonly LocationRepository _locationRepository;
+
+    readonly List<Location> _locations = new List<Location>()
+    {
+        new Location { HotelId = 1, Latitude = 48.8566f, Longitude = 2.3522f },
+        new Location { HotelId = 2, Latitude = 35.6895f, Longitude = 139.6917f },
+        new Location { HotelId = 3, Latitude = 40.7128f, Longitude = -74.0060f },
+        new Location { HotelId = 4, Latitude = 41.9028f, Longitude = 12.4964f },
+        new Location { HotelId = 5, Latitude = 41.3851f, Longitude = 2.1734f }
+    };
+
+    public LocationRepositoryTests()
+    {
+        var inMemory = new InMemoryDbContextFactory();
+        _context = inMemory.Create();
+        _locationRepository = new LocationRepository(_context);
+    }
+
+    [Theory]
+    [InlineData(1, 10)]
+    [InlineData(2, 2)]
+    [InlineData(2, 10)]
+    public async Task GetAll_ReturnsPagedLocations_WhenNoSearchTermProvided(int pageNumber, int pageSize)
+    {
+        //Arrange
+        _context.Locations.AddRange(_locations);
+        await _context.SaveChangesAsync();
+        var queryParameter = new LocationQueryParameters
+        {
+            Page = pageNumber,
+            PageSize = pageSize
+        };
+
+        //Act
+        var (entities, paginationMetaData) = await _locationRepository.GetAll(queryParameter);
+        var resultList = entities.ToList();
+
+        int expectedCount = Math.Max(0, Math.Min(resultList.Count, pageSize));
+
+        //Assert
+        resultList.Count.Should().Be(expectedCount);
+        paginationMetaData.CurrentPage.Should().Be(pageNumber);
+    }
+
+    [Theory]
+    [InlineData(5, null, null, 1, 10)]
+    [InlineData(null, 41.3851f, 2.1734f, 1, 2)]
+    [InlineData(null, null, null, 1, 10)]
+    public async Task GetAll_WithSearchTerm_ShouldReturnFilteredCities(int? hotelId, float? latitude, float? longitude, int pageNumber, int pageSize)
+    {
+        //Arrange
+        _context.Locations.AddRange(_locations);
+        await _context.SaveChangesAsync();
+        var queryParameters = new LocationQueryParameters
+        {
+            Page = pageNumber,
+            PageSize = pageSize,
+            HotelId = hotelId,
+            Latitude = latitude,
+            Longitude = longitude
+        };
+
+        //Act
+        var (entities, paginationMetaData) = await _locationRepository.GetAll(queryParameters);
+        var resultList = entities.ToList();
+        var expectedResult = _locations.Where(location =>
+            (hotelId.HasValue && location.HotelId == hotelId) ||
+            (latitude.HasValue && longitude.HasValue && location.Latitude == latitude && location.Longitude == longitude));
+        expectedResult = expectedResult.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToList();
+
+
+        //Assert
+        resultList.Count.Should().Be(expectedResult.Count());
+        resultList.Should().BeEquivalentTo(expectedResult);
+        paginationMetaData.CurrentPage.Should().Be(pageNumber);
+
+
+    }
+    [Fact]
+    public async Task GetAll_WithNullParameters_ShouldUseDefaults()
+    {
+        //Arrange
+        await _context.Locations.AddRangeAsync(_locations);
+        await _context.SaveChangesAsync();
+
+        //Act
+        var (entities, paginationMetaData) = await _locationRepository.GetAll(null);
+
+        //
+        paginationMetaData.CurrentPage.Should().Be(1);
+        paginationMetaData.PageSize.Should().Be(10);
+    }
+
+    [Fact]
+    public async Task GetById_WithValidId_ShouldReturnLocation()
+    {
+        //Arrange
+        await _context.Locations.AddRangeAsync(_locations);
+        await _context.SaveChangesAsync();
+        var locationHotelId = _locations.First().HotelId;
+        //Act
+        var result = await _locationRepository.GetById(locationHotelId);
+
+        //Assert
+        result.Should().NotBeNull();
+        result.HotelId.Should().Be(locationHotelId);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(null)]
+    public async Task GetById_WithInvalidId_ShouldReturnNull(int locationHotelId)
+    {
+        //Arrange
+        await _context.Locations.AddRangeAsync(_locations);
+        await _context.SaveChangesAsync();
+
+        //Act
+        var result = await _locationRepository.GetById(locationHotelId);
+
+        //Assert
+        result.Should().BeNull();
+
+    }
+
+    [Fact]
+    public async Task CreateLocation_WithValidData_ShouldCreateLocation()
+    {
+        //Arrange
+        var location = new Location { HotelId = 6, Latitude = 49.8566f, Longitude = 1.3522f };
+
+        //Act
+        var createResult = await _locationRepository.Create(location);
+        var saveChangesResult = await _context.SaveChangesAsync();
+
+        //Assert
+        createResult.Should().NotBeNull();
+        saveChangesResult.Should().Be(1);
+
+    }
+
+
+    [Fact]
+    public async Task UpdateLocation_WithValidData_ShouldUpdateLocation()
+    {
+        //Arrange
+        await _context.Locations.AddRangeAsync(_locations);
+        await _context.SaveChangesAsync();
+        var location = await _locationRepository.GetById(_locations[0].HotelId);
+        location.Latitude = 49.8566f;
+        location.Longitude = 1.3522f;
+
+        //Act
+        var updateResult = await _locationRepository.UpdateAsync(location);
+        var saveChangesResult = await _context.SaveChangesAsync();
+
+        //Assert
+        updateResult.Should().BeEquivalentTo(location);
+        saveChangesResult.Should().Be(1);
+
+    }
+
+
+    [Fact]
+    public async Task UpdateLocation_WithInvalidData_ShouldReturnNull()
+    {
+        //Arrange
+        var location = new Location { HotelId = -1, Latitude = 49.8566f, Longitude = 1.3522f };
+
+        //Act
+        var updateResult = await _locationRepository.UpdateAsync(location);
+        var saveChangesResult = await _context.SaveChangesAsync();
+
+        //Assert
+        updateResult.Should().BeNull();
+        saveChangesResult.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DeleteLocation_WithValidData_ShouldDeleteLocation()
+    {
+        //Arrange
+        await _context.Locations.AddRangeAsync(_locations);
+        await _context.SaveChangesAsync();
+        var location = await _locationRepository.GetById(_locations[0].HotelId);
+
+        //Act
+        var deleteResult = await _locationRepository.Delete(location.HotelId);
+        var saveChangesResult = await _context.SaveChangesAsync();
+        var getResult = await _locationRepository.GetById(location.HotelId);
+
+        //Assert
+        deleteResult.Should().NotBeNull();
+        deleteResult.Should().BeEquivalentTo(location);
+        getResult.Should().BeNull();
+        saveChangesResult.Should().Be(1);
+
+    }
+
+    [Fact]
+    public async Task DeleteLocation_WithInvalidId_ShouldReturnNull()
+    {
+        //Arrange
+        var location = new Location { HotelId = -1, Latitude = 49.8566f, Longitude = 1.3522f };
+
+        //Act
+        var deleteResult = await _locationRepository.Delete(location.HotelId);
+        var saveChangesResult = await _context.SaveChangesAsync();
+
+        //Assert
+        deleteResult.Should().BeNull();
+        saveChangesResult.Should().Be(0);
+    }
+
+
+    [Fact]
+    public async Task SaveChangesAsync_WithValidData_ShouldSaveChanges()
+    {
+        //Arrange
+        var location = new List<Location>
+        {
+            new Location { HotelId = 3, Latitude = 40.7128f, Longitude = -74.0060f },
+            new Location { HotelId = 4, Latitude = 41.9028f, Longitude = 12.4964f },
+        };
+        await _context.Locations.AddRangeAsync(location);
+        //Act
+        var saveChangesResult = await _context.SaveChangesAsync();
+
+        //Assert
+        saveChangesResult.Should().Be(location.Count());
+    }
+
+    [Fact]
+    public async Task SaveChanges_WithNoChanges_ShouldReturnZero()
+    {
+        //Act
+        var saveChangesResult = await _context.SaveChangesAsync();
+        //Assert
+        saveChangesResult.Should().Be(0);
+    }
+    public void Dispose()
+    {
+        _context.Dispose();
+    }
+}

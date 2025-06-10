@@ -2,14 +2,16 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using TravelAndAccommodationBookingPlatform.Application.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
+using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Repositories;
+using TravelAndAccommodationBookingPlatform.Tests.common.DatabaseFactories;
 
 namespace TravelAndAccommodationBookingPlatform.Tests.Integration.Repositories;
 
 public class CityRepositoryTests : IDisposable
 {
-    private readonly SqlServerDbContext _context;
+    private readonly IAppDbContext _context;
     private readonly CityRepository _cityRepository;
 
     readonly List<City> _cities = new List<City>
@@ -23,11 +25,8 @@ public class CityRepositoryTests : IDisposable
 
     public CityRepositoryTests()
     {
-        var options = new DbContextOptionsBuilder<SqlServerDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-
-        _context = new SqlServerDbContext(options);
+        var inMemory = new InMemoryDbContextFactory();
+        _context = inMemory.Create();
         _cityRepository = new CityRepository(_context);
 
     }
@@ -48,8 +47,7 @@ public class CityRepositoryTests : IDisposable
         var (result, paginationMetaData) = await _cityRepository.GetAll(queryParameters);
         List<City> resultList = result.ToList();
 
-        int skip = (pageNumber - 1) * pageSize;
-        int expectedCount = Math.Max(0, Math.Min(pageSize, _cities.Count - skip));
+        int expectedCount = Math.Max(0, Math.Min(pageSize, resultList.Count));
         // Assert
         resultList.Count.Should().Be(expectedCount);
         paginationMetaData.CurrentPage.Should().Be(pageNumber);

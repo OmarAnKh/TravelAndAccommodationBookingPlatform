@@ -1,16 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 using TravelAndAccommodationBookingPlatform.Domain.Enums;
+using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 
 namespace TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 
-public class SqlServerDbContext : DbContext
+public class SqlServerDbContext : DbContext, IAppDbContext
 {
     public SqlServerDbContext(DbContextOptions<SqlServerDbContext> options) : base(options)
     {
     }
 
-    // Parameterless constructor for cases where options are configured in OnConfiguring
     public SqlServerDbContext()
     {
     }
@@ -25,7 +25,6 @@ public class SqlServerDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        // Only configure if no options have been provided (for backward compatibility)
         if (!optionsBuilder.IsConfigured)
         {
             DotNetEnv.Env.Load();

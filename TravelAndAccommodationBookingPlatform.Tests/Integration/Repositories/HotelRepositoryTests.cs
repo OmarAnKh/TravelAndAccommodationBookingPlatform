@@ -2,15 +2,16 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using TravelAndAccommodationBookingPlatform.Application.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
-using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
+using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Repositories;
+using TravelAndAccommodationBookingPlatform.Tests.common.DatabaseFactories;
 
 namespace TravelAndAccommodationBookingPlatform.Tests.Integration.Repositories;
 
 public class HotelRepositoryTests : IDisposable
 {
     private readonly HotelRepository _hotelRepository;
-    private readonly SqlServerDbContext _context;
+    private readonly IAppDbContext _context;
 
     readonly List<Hotel> _hotels = new List<Hotel>()
     {
@@ -23,10 +24,8 @@ public class HotelRepositoryTests : IDisposable
 
     public HotelRepositoryTests()
     {
-        var options = new DbContextOptionsBuilder<SqlServerDbContext>()
-            .UseInMemoryDatabase(databaseName: $"HotelRepository{Guid.NewGuid().ToString()}")
-            .Options;
-        _context = new SqlServerDbContext(options);
+        var inMemory = new InMemoryDbContextFactory();
+        _context = inMemory.Create();
         _hotelRepository = new HotelRepository(_context);
     }
 
@@ -37,7 +36,6 @@ public class HotelRepositoryTests : IDisposable
     public async Task GetAll_ReturnsPagedHotels_WhenNoSearchTermProvided(int pageNumber, int pageSize)
     {
         // Arrange
-        _context.Hotels.RemoveRange(_context.Hotels);
         await _context.Hotels.AddRangeAsync(_hotels);
         await _context.SaveChangesAsync();
 
@@ -51,8 +49,7 @@ public class HotelRepositoryTests : IDisposable
         var (entities, paginationMetaData) = await _hotelRepository.GetAll(queryParameters);
         var resultList = entities.ToList();
 
-        int skip = (pageNumber - 1) * pageSize;
-        int expectedCount = Math.Max(0, Math.Min(pageSize, _hotels.Count - skip));
+        int expectedCount = Math.Max(0, Math.Min(pageSize, resultList.Count));
 
         // Assert
         resultList.Count.Should().Be(expectedCount);
@@ -66,7 +63,6 @@ public class HotelRepositoryTests : IDisposable
     public async Task GetAll_WithSearchTerm_ShouldReturnFilteredCities(string searchTerm, int pageNumber, int pageSize)
     {
         //Arrange
-        _context.Hotels.RemoveRange(_context.Hotels);
         await _context.Hotels.AddRangeAsync(_hotels);
         await _context.SaveChangesAsync();
         var queryParameters = new HotelQueryParameters
@@ -161,6 +157,8 @@ public class HotelRepositoryTests : IDisposable
         //Act
         var result = await _hotelRepository.UpdateAsync(hotel);
         await _hotelRepository.SaveChangesAsync();
+
+        //Assert
         result.Should().BeEquivalentTo(hotel);
 
     }

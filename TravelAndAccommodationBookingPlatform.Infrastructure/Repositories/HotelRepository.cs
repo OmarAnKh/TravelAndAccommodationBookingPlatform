@@ -3,14 +3,13 @@ using TravelAndAccommodationBookingPlatform.Application.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
-using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 
 namespace TravelAndAccommodationBookingPlatform.Infrastructure.Repositories;
 
 public class HotelRepository : IHotelRepository
 {
-    private readonly SqlServerDbContext _context;
-    public HotelRepository(SqlServerDbContext context)
+    private readonly IAppDbContext _context;
+    public HotelRepository(IAppDbContext context)
     {
         _context = context;
     }

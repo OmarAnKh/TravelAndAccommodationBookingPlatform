@@ -3,14 +3,14 @@ using TravelAndAccommodationBookingPlatform.Application.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
-using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 
 namespace TravelAndAccommodationBookingPlatform.Infrastructure.Repositories;
 
 public class CityRepository : ICityRepository
 {
-    private readonly SqlServerDbContext _context;
-    public CityRepository(SqlServerDbContext context)
+    private readonly IAppDbContext _context;
+
+    public CityRepository(IAppDbContext context)
     {
         _context = context;
     }
@@ -52,6 +52,7 @@ public class CityRepository : ICityRepository
         {
             return null;
         }
+
         _context.Entry(city).CurrentValues.SetValues(entity);
         return city;
     }
