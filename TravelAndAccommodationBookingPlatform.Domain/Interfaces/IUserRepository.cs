@@ -7,4 +7,5 @@ public interface IUserRepository : IRepository<User, UserQueryParameters>
 {
     Task<User?> GetById(int id);
     Task<User?> Delete(int id);
+
 }

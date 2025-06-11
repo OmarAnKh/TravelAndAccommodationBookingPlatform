@@ -22,7 +22,7 @@ public class RoomRepositoryTests : IDisposable
         _roomRepository = new RoomRepository(_context);
     }
 
-    private List<Room> _rooms = new List<Room>
+    private readonly List<Room> _rooms = new List<Room>
     {
         new Room { HotelId = 1, RoomType = RoomType.Single, Price = 120, Availability = Availability.Available },
         new Room { HotelId = 2, RoomType = RoomType.Deluxe, Price = 200, Availability = Availability.Unavailable },
@@ -277,7 +277,7 @@ public class RoomRepositoryTests : IDisposable
 
         //Act
         var saveChangesResult = await _roomRepository.SaveChangesAsync();
-        
+
         //Assert
         saveChangesResult.Should().Be(0);
     }
