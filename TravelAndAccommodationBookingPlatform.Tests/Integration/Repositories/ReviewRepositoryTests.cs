@@ -212,7 +212,7 @@ public class ReviewRepositoryTests : IDisposable
         };
 
         //Act
-        var createResult = await _context.Reviews.AddAsync(review);
+        var createResult = await _reviewRepository.Create(review);
         var saveChangesResult = await _reviewRepository.SaveChangesAsync();
 
         //Assert

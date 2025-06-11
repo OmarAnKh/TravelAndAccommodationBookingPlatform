@@ -132,8 +132,7 @@ public class SqlServerDbContext : DbContext, IAppDbContext
                 UserId = 1,
                 HotelId = 1,
                 Comment = "Amazing service and beautiful view!",
-                Rate = 4.8f,
-                ImagePath = "images/reviews/review1.jpg",
+                Rate = 4.8f, ImagePath = "images/reviews/review1.jpg",
                 CreatedAt = new DateTime(2024, 12, 15),
                 UpdatedAt = new DateTime(2024, 12, 15)
             },
