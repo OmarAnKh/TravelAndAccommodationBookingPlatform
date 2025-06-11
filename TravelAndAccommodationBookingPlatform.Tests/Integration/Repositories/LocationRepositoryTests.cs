@@ -1,9 +1,7 @@
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
-using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Repositories;
 using TravelAndAccommodationBookingPlatform.Tests.common.DatabaseFactories;
 using TravelAndAccommodationBookingPlatform.Tests.enums;
@@ -13,7 +11,7 @@ namespace TravelAndAccommodationBookingPlatform.Tests.Integration.Repositories;
 public class LocationRepositoryTests : IDisposable
 {
     private readonly IAppDbContext _context;
-    private readonly LocationRepository _locationRepository;
+    private readonly ILocationRepository _locationRepository;
 
     readonly List<Location> _locations = new List<Location>()
     {
@@ -236,7 +234,7 @@ public class LocationRepositoryTests : IDisposable
 
 
     [Fact]
-    public async Task SaveChangesAsync_WithValidData_ShouldSaveChanges()
+    public async Task SaveChangesAsync_WithMultipleValues_ShouldReturnTheNumberOfChanges()
     {
         //Arrange
         var location = new List<Location>
@@ -253,7 +251,7 @@ public class LocationRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task SaveChanges_WithNoChanges_ShouldReturnZero()
+    public async Task SaveChangesAsync_WithNoChanges_ShouldReturnZeroChange()
     {
         //Act
         var saveChangesResult = await _context.SaveChangesAsync();

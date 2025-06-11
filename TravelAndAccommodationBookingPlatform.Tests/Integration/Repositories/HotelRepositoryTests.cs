@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
@@ -11,7 +10,7 @@ namespace TravelAndAccommodationBookingPlatform.Tests.Integration.Repositories;
 
 public class HotelRepositoryTests : IDisposable
 {
-    private readonly HotelRepository _hotelRepository;
+    private readonly IHotelRepository _hotelRepository;
     private readonly IAppDbContext _context;
 
     readonly List<Hotel> _hotels = new List<Hotel>()
@@ -218,7 +217,7 @@ public class HotelRepositoryTests : IDisposable
 
 
     [Fact]
-    public async Task SaveChanges_ShouldReturnNumberOfAffectedEntries()
+    public async Task SaveChangesAsync_WithMultipleValues_ShouldReturnTheNumberOfChanges()
     {
         // Arrange
         var hotels = new List<Hotel>
@@ -238,7 +237,7 @@ public class HotelRepositoryTests : IDisposable
 
 
     [Fact]
-    public async Task SaveChanges_WithNoChanges_ShouldReturnZero()
+    public async Task SaveChangesAsync_WithNoChanges_ShouldReturnZeroChange()
     {
         // Act
         var result = await _hotelRepository.SaveChangesAsync();

@@ -12,7 +12,7 @@ namespace TravelAndAccommodationBookingPlatform.Tests.Integration.Repositories;
 public class ReservationRepositoryTests : IDisposable
 {
     private readonly IAppDbContext _context;
-    private readonly ReservationRepository _reservationRepository;
+    private readonly IReservationRepository _reservationRepository;
 
     private List<Reservation> _reservations = new List<Reservation>
     {
@@ -188,7 +188,6 @@ public class ReservationRepositoryTests : IDisposable
         var result = await _reservationRepository.GetByUserAndRoomId(_reservations[0].UserId, _reservations[0].RoomId);
 
         //Assert
-        result.Should().NotBeNull();
         result.Should().BeEquivalentTo(_reservations[0]);
     }
 
@@ -318,7 +317,7 @@ public class ReservationRepositoryTests : IDisposable
 
 
     [Fact]
-    public async Task SaveChangesAsync_WithValidData_ShouldSaveChanges()
+    public async Task SaveChangesAsync_WithMultipleValues_ShouldReturnTheNumberOfChanges()
     {
         //Arrange
         var reservations = new List<Reservation>
@@ -355,7 +354,7 @@ public class ReservationRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task SaveChangesAsync_WithInvalidId_ShouldReturnNull()
+    public async Task SaveChangesAsync_WithNoChanges_ShouldReturnZeroChange()
     {
         //Arrange
 

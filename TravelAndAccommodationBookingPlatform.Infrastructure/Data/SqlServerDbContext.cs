@@ -42,7 +42,7 @@ public class SqlServerDbContext : DbContext, IAppDbContext
 
         // Review composite key and relationships
         modelBuilder.Entity<Review>()
-            .HasKey(r => new { r.UserId, r.HotelId });
+            .HasKey(r => r.ReviewId);
 
         modelBuilder.Entity<Review>()
             .HasOne<Hotel>(r => r.Hotel)
@@ -124,5 +124,64 @@ public class SqlServerDbContext : DbContext, IAppDbContext
             new Room { Id = 4, HotelId = 4, RoomType = RoomType.Single, Price = 100, Availability = Availability.Unavailable, CreatedAt = baseDate },
             new Room { Id = 5, HotelId = 5, RoomType = RoomType.Deluxe, Price = 180, Availability = Availability.Available, CreatedAt = baseDate }
         );
+
+        modelBuilder.Entity<Review>().HasData(
+            new Review
+            {
+                ReviewId = 1,
+                UserId = 1,
+                HotelId = 1,
+                Comment = "Amazing service and beautiful view!",
+                Rate = 4.8f,
+                ImagePath = "images/reviews/review1.jpg",
+                CreatedAt = new DateTime(2024, 12, 15),
+                UpdatedAt = new DateTime(2024, 12, 15)
+            },
+            new Review
+            {
+                ReviewId = 2,
+                UserId = 2,
+                HotelId = 1,
+                Comment = "Good location but noisy at night.",
+                Rate = 3.5f,
+                ImagePath = "images/reviews/review2.jpg",
+                CreatedAt = new DateTime(2025, 1, 10),
+                UpdatedAt = new DateTime(2025, 1, 10)
+            },
+            new Review
+            {
+                ReviewId = 3,
+                UserId = 1,
+                HotelId = 2,
+                Comment = "Clean rooms and friendly staff.",
+                Rate = 4.2f,
+                ImagePath = null,
+                CreatedAt = new DateTime(2025, 2, 20),
+                UpdatedAt = new DateTime(2025, 2, 21)
+            },
+            new Review
+            {
+                ReviewId = 4,
+                UserId = 3,
+                HotelId = 2,
+                Comment = "Mediocre experience overall.",
+                Rate = 2.9f,
+                ImagePath = "images/reviews/review4.jpg",
+                CreatedAt = new DateTime(2025, 3, 5),
+                UpdatedAt = new DateTime(2025, 3, 5)
+            },
+            new Review
+            {
+                ReviewId = 5,
+                UserId = 2,
+                HotelId = 3,
+                Comment = "Best stay I’ve had in years!",
+                Rate = 5.0f,
+                ImagePath = "images/reviews/review5.jpg",
+                CreatedAt = new DateTime(2025, 4, 18),
+                UpdatedAt = new DateTime(2025, 4, 18)
+            }
+        );
+
     }
 }
