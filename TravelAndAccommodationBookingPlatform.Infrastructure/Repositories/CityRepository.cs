@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using TravelAndAccommodationBookingPlatform.Application.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
+using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 
@@ -14,24 +14,24 @@ public class CityRepository : ICityRepository
     {
         _context = context;
     }
-    public async Task<(IEnumerable<City>, PaginationMetaData)> GetAll(IQueryParameters parameters)
+    public async Task<(IEnumerable<City>, PaginationMetaData)> GetAll(CityQueryParameters queryParams)
     {
-        var cityParams = parameters as CityQueryParameters;
-        var pageNumber = cityParams?.Page ?? 1;
-        var pageSize = cityParams?.PageSize ?? 10;
-        var query = _context.Cities as IQueryable<City>;
+        var query = _context.Cities.AsQueryable();
 
-        if (!string.IsNullOrEmpty(cityParams?.SearchTerm))
+        if (!string.IsNullOrEmpty(queryParams.SearchTerm))
         {
-            query = query.Where(c => c.Name.Contains(cityParams.SearchTerm) || c.Country.Contains(cityParams.SearchTerm));
+            query = query.Where(c => c.Name.Contains(queryParams.SearchTerm) ||
+                                     c.Country.Contains(queryParams.SearchTerm));
         }
-        int totalCount = await query.CountAsync();
 
-        PaginationMetaData paginationMetaData = new PaginationMetaData(totalCount, pageNumber, pageSize);
+        int totalCount = await query.CountAsync();
+        var paginationMetaData = new PaginationMetaData(totalCount, queryParams.Page, queryParams.PageSize);
+
         var collectionToReturn = await query
-            .Skip(pageSize * (pageNumber - 1))
-            .Take(pageSize)
+            .Skip(queryParams.PageSize * (queryParams.Page - 1))
+            .Take(queryParams.PageSize)
             .ToListAsync();
+
         return (collectionToReturn, paginationMetaData);
     }
     public async Task<City?> GetById(int id)
@@ -41,8 +41,8 @@ public class CityRepository : ICityRepository
     }
     public async Task<City?> Create(City entity)
     {
-        await _context.Cities.AddAsync(entity);
-        return entity;
+        var result = await _context.Cities.AddAsync(entity);
+        return result.Entity;
     }
     public async Task<City?> UpdateAsync(City entity)
     {

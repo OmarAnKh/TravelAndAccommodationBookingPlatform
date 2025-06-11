@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using TravelAndAccommodationBookingPlatform.Application.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
+using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 
@@ -13,24 +13,24 @@ public class HotelRepository : IHotelRepository
     {
         _context = context;
     }
-    public async Task<(IEnumerable<Hotel>, PaginationMetaData)> GetAll(IQueryParameters parameters)
+    public async Task<(IEnumerable<Hotel>, PaginationMetaData)> GetAll(HotelQueryParameters queryParams)
     {
-        var hotelParameters = parameters as HotelQueryParameters;
-        var pageNumber = hotelParameters?.Page ?? 1;
-        var pageSize = hotelParameters?.PageSize ?? 10;
-        var query = _context.Hotels as IQueryable<Hotel>;
-        if (!string.IsNullOrEmpty(hotelParameters?.SearchTerm))
+        var query = _context.Hotels.AsQueryable();
+
+        if (!string.IsNullOrEmpty(queryParams.SearchTerm))
         {
-            query = query.Where(hotel => hotel.Name.Contains(hotelParameters.SearchTerm)
-                                         || hotel.Description.Contains(hotelParameters.SearchTerm)
-            );
+            query = query.Where(hotel => hotel.Name.Contains(queryParams.SearchTerm) ||
+                                         hotel.Description.Contains(queryParams.SearchTerm));
         }
+
         var totalCount = await query.CountAsync();
-        PaginationMetaData paginationMetaData = new PaginationMetaData(totalCount, pageNumber, pageSize);
+        var paginationMetaData = new PaginationMetaData(totalCount, queryParams.Page, queryParams.PageSize);
+
         var collectionToReturn = await query
-            .Skip(pageSize * (pageNumber - 1))
-            .Take(pageSize)
+            .Skip(queryParams.PageSize * (queryParams.Page - 1))
+            .Take(queryParams.PageSize)
             .ToListAsync();
+
         return (collectionToReturn, paginationMetaData);
     }
     public async Task<Hotel?> GetById(int id)
@@ -40,8 +40,8 @@ public class HotelRepository : IHotelRepository
     }
     public async Task<Hotel?> Create(Hotel entity)
     {
-        await _context.Hotels.AddAsync(entity);
-        return entity;
+        var result = await _context.Hotels.AddAsync(entity);
+        return result.Entity;
     }
     public async Task<Hotel?> UpdateAsync(Hotel entity)
     {

@@ -1,11 +1,12 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using TravelAndAccommodationBookingPlatform.Application.Common.QueryParameters;
+using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Repositories;
 using TravelAndAccommodationBookingPlatform.Tests.common.DatabaseFactories;
+using TravelAndAccommodationBookingPlatform.Tests.enums;
 
 namespace TravelAndAccommodationBookingPlatform.Tests.Integration.Repositories;
 
@@ -25,8 +26,8 @@ public class LocationRepositoryTests : IDisposable
 
     public LocationRepositoryTests()
     {
-        var inMemory = new InMemoryDbContextFactory();
-        _context = inMemory.Create();
+        var dbFactory = new DbContextFactory();
+        _context = dbFactory.Create(DatabaseType.InMemory);
         _locationRepository = new LocationRepository(_context);
     }
 
@@ -60,7 +61,7 @@ public class LocationRepositoryTests : IDisposable
     [InlineData(5, null, null, 1, 10)]
     [InlineData(null, 41.3851f, 2.1734f, 1, 2)]
     [InlineData(null, null, null, 1, 10)]
-    public async Task GetAll_WithSearchTerm_ShouldReturnFilteredCities(int? hotelId, float? latitude, float? longitude, int pageNumber, int pageSize)
+    public async Task GetAll_WithSearchTerm_ShouldReturnFilteredLocations(int? hotelId, float? latitude, float? longitude, int pageNumber, int pageSize)
     {
         //Arrange
         _context.Locations.AddRange(_locations);
@@ -77,28 +78,35 @@ public class LocationRepositoryTests : IDisposable
         //Act
         var (entities, paginationMetaData) = await _locationRepository.GetAll(queryParameters);
         var resultList = entities.ToList();
-        var expectedResult = _locations.Where(location =>
-            (hotelId.HasValue && location.HotelId == hotelId) ||
-            (latitude.HasValue && longitude.HasValue && location.Latitude == latitude && location.Longitude == longitude));
-        expectedResult = expectedResult.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToList();
+        var queryableResult = _locations.AsQueryable();
+
+        if (hotelId.HasValue)
+        {
+            queryableResult = queryableResult.Where(location => location.HotelId == hotelId);
+        }
+
+        if (latitude.HasValue && longitude.HasValue)
+        {
+            queryableResult = queryableResult.Where(location => location.Latitude == latitude && location.Longitude == longitude);
+        }
+
+        var listResult = queryableResult.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToList();
 
 
         //Assert
-        resultList.Count.Should().Be(expectedResult.Count());
-        resultList.Should().BeEquivalentTo(expectedResult);
+        resultList.Count.Should().Be(listResult.Count());
+        resultList.Should().BeEquivalentTo(listResult);
         paginationMetaData.CurrentPage.Should().Be(pageNumber);
 
 
     }
     [Fact]
-    public async Task GetAll_WithNullParameters_ShouldUseDefaults()
+    public async Task GetAll_WithEmptyObject_ShouldUseDefaults()
     {
         //Arrange
-        await _context.Locations.AddRangeAsync(_locations);
-        await _context.SaveChangesAsync();
 
         //Act
-        var (entities, paginationMetaData) = await _locationRepository.GetAll(null);
+        var (entities, paginationMetaData) = await _locationRepository.GetAll(new LocationQueryParameters());
 
         //
         paginationMetaData.CurrentPage.Should().Be(1);

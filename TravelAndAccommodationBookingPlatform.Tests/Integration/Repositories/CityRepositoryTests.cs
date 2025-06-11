@@ -1,11 +1,12 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using TravelAndAccommodationBookingPlatform.Application.Common.QueryParameters;
+using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Repositories;
 using TravelAndAccommodationBookingPlatform.Tests.common.DatabaseFactories;
+using TravelAndAccommodationBookingPlatform.Tests.enums;
 
 namespace TravelAndAccommodationBookingPlatform.Tests.Integration.Repositories;
 
@@ -25,8 +26,8 @@ public class CityRepositoryTests : IDisposable
 
     public CityRepositoryTests()
     {
-        var inMemory = new InMemoryDbContextFactory();
-        _context = inMemory.Create();
+        var dbFactory = new DbContextFactory();
+        _context = dbFactory.Create(DatabaseType.InMemory);
         _cityRepository = new CityRepository(_context);
 
     }
@@ -84,11 +85,13 @@ public class CityRepositoryTests : IDisposable
 
 
     [Fact]
-    public async Task GetAll_WithNullParameters_ShouldUseDefaults()
+    public async Task GetAll_WithEmptyObject_ShouldUseDefaults()
     {
         // Arrange
+
+
         // Act
-        var (result, paginationMetaData) = await _cityRepository.GetAll(null);
+        var (result, paginationMetaData) = await _cityRepository.GetAll(new CityQueryParameters());
 
         // Assert
         paginationMetaData.CurrentPage.Should().Be(1);

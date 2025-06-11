@@ -1,6 +1,4 @@
-using TravelAndAccommodationBookingPlatform.Domain.Common;
-
-namespace TravelAndAccommodationBookingPlatform.Application.Common.QueryParameters;
+namespace TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 
 public class CityQueryParameters : IQueryParameters
 {

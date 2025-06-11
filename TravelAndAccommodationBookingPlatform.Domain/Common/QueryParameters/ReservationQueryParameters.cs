@@ -1,7 +1,6 @@
-using TravelAndAccommodationBookingPlatform.Domain.Common;
 using TravelAndAccommodationBookingPlatform.Domain.Enums;
 
-namespace TravelAndAccommodationBookingPlatform.Application.Common.QueryParameters;
+namespace TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 
 public class ReservationQueryParameters : IQueryParameters
 {

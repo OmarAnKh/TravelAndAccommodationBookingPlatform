@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using TravelAndAccommodationBookingPlatform.Application.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
+using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 
@@ -14,23 +14,29 @@ public class LocationRepository : ILocationRepository
     {
         _context = context;
     }
-    public async Task<(IEnumerable<Location>, PaginationMetaData)> GetAll(IQueryParameters parameters)
+    public async Task<(IEnumerable<Location>, PaginationMetaData)> GetAll(LocationQueryParameters queryParams)
     {
-        var locationQueryParameters = parameters as LocationQueryParameters;
-        var pageSize = locationQueryParameters?.PageSize ?? 10;
-        var pageNumber = locationQueryParameters?.Page ?? 1;
-        int? hotelId = locationQueryParameters?.HotelId;
-        float? latitude = locationQueryParameters?.Latitude;
-        float? longitude = locationQueryParameters?.Longitude;
+        var query = _context.Locations.AsQueryable();
 
-        var query = _context.Locations.Where(location =>
-            (hotelId.HasValue && location.HotelId == hotelId) ||
-            (latitude.HasValue && longitude.HasValue && location.Latitude == latitude && location.Longitude == longitude));
+        if (queryParams.HotelId.HasValue)
+        {
+            query = query.Where(location => location.HotelId == queryParams.HotelId);
+        }
+
+        if (queryParams is { Latitude: not null, Longitude: not null })
+        {
+            query = query.Where(location => location.Latitude == queryParams.Latitude &&
+                                            location.Longitude == queryParams.Longitude);
+        }
 
         int totalItemsCount = await query.CountAsync();
-        var paginationMetaData = new PaginationMetaData(totalItemsCount, pageNumber, pageSize);
+        var paginationMetaData = new PaginationMetaData(totalItemsCount, queryParams.Page, queryParams.PageSize);
 
-        var resultCollection = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+        var resultCollection = await query
+            .Skip((queryParams.Page - 1) * queryParams.PageSize)
+            .Take(queryParams.PageSize)
+            .ToListAsync();
+
         return (resultCollection, paginationMetaData);
     }
 
@@ -41,8 +47,8 @@ public class LocationRepository : ILocationRepository
     }
     public async Task<Location?> Create(Location entity)
     {
-        await _context.Locations.AddAsync(entity);
-        return entity;
+        var result = await _context.Locations.AddAsync(entity);
+        return result.Entity;
     }
     public async Task<Location?> UpdateAsync(Location entity)
     {

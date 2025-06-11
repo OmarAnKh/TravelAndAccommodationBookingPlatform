@@ -1,10 +1,11 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using TravelAndAccommodationBookingPlatform.Application.Common.QueryParameters;
+using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Repositories;
 using TravelAndAccommodationBookingPlatform.Tests.common.DatabaseFactories;
+using TravelAndAccommodationBookingPlatform.Tests.enums;
 
 namespace TravelAndAccommodationBookingPlatform.Tests.Integration.Repositories;
 
@@ -24,8 +25,8 @@ public class HotelRepositoryTests : IDisposable
 
     public HotelRepositoryTests()
     {
-        var inMemory = new InMemoryDbContextFactory();
-        _context = inMemory.Create();
+        var dbFactory = new DbContextFactory();
+        _context = dbFactory.Create(DatabaseType.InMemory);
         _hotelRepository = new HotelRepository(_context);
     }
 
@@ -86,11 +87,11 @@ public class HotelRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetAll_WithNullParameters_ShouldUseDefaults()
+    public async Task GetAll_WithEmptyObject_ShouldUseDefaults()
     {
         // Arrange
         // Act
-        var (result, paginationMetaData) = await _hotelRepository.GetAll(null);
+        var (result, paginationMetaData) = await _hotelRepository.GetAll(new HotelQueryParameters());
 
         // Assert
         paginationMetaData.CurrentPage.Should().Be(1);
