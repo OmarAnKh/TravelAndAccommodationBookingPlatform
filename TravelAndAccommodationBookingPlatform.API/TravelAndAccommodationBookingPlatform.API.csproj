@@ -7,8 +7,17 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AutoMapper" Version="8.0.0"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8"/>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Controllers\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\TravelAndAccommodationBookingPlatform.Application\TravelAndAccommodationBookingPlatform.Application.csproj"/>
     </ItemGroup>
 
 </Project>

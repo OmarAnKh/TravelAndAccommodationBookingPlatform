@@ -1,9 +1,10 @@
+using TravelAndAccommodationBookingPlatform.Application.DTOs.Reservation;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 
 namespace TravelAndAccommodationBookingPlatform.Application.Interfaces;
 
-public interface IReservationService : IService<Reservation, ReservationQueryParameters>
+public interface IReservationService : IService<Reservation, ReservationQueryParameters, ReservationCreationDto, ReservationUpdateDto, ReservationDto>
 {
     Task<Reservation?> GetByUserAndRoomId(int userId, int roomId);
     Task<Reservation?> DeleteByUserAndRoomId(int userId, int roomId);
