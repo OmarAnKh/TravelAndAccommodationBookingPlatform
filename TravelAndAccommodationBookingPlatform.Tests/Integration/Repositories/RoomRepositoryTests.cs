@@ -3,6 +3,7 @@ using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 using TravelAndAccommodationBookingPlatform.Domain.Enums;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
+using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Repositories;
 using TravelAndAccommodationBookingPlatform.Tests.common.DatabaseFactories;
 using TravelAndAccommodationBookingPlatform.Tests.enums;

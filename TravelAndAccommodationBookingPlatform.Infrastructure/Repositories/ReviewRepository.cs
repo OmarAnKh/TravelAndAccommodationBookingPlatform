@@ -3,6 +3,7 @@ using TravelAndAccommodationBookingPlatform.Domain.Common;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
+using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 
 namespace TravelAndAccommodationBookingPlatform.Infrastructure.Repositories;
 

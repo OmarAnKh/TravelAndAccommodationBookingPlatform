@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 
-namespace TravelAndAccommodationBookingPlatform.Domain.Interfaces;
+namespace TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 
 public interface IAppDbContext
 {
