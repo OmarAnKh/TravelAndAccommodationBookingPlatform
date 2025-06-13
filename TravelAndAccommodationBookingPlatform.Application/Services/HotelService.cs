@@ -47,16 +47,16 @@ public class HotelService : IHotelService
         await _hotelRepository.SaveChangesAsync();
         return _mapper.Map<HotelDto>(updateResult);
     }
-    public async Task<Hotel?> GetById(int id)
+    public async Task<HotelDto?> GetById(int id)
     {
         var hotel = await _hotelRepository.GetById(id);
         if (hotel is null)
         {
             return null;
         }
-        return _mapper.Map<Hotel>(hotel);
+        return _mapper.Map<HotelDto>(hotel);
     }
-    public async Task<Hotel?> Delete(int id)
+    public async Task<HotelDto?> Delete(int id)
     {
         var deleteResult = await _hotelRepository.Delete(id);
         if (deleteResult is null)
@@ -64,6 +64,6 @@ public class HotelService : IHotelService
             return null;
         }
         await _hotelRepository.SaveChangesAsync();
-        return _mapper.Map<Hotel>(deleteResult);
+        return _mapper.Map<HotelDto>(deleteResult);
     }
 }

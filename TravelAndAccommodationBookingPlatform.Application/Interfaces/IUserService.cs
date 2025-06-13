@@ -6,6 +6,6 @@ namespace TravelAndAccommodationBookingPlatform.Application.Interfaces;
 
 public interface IUserService : IService<User, UserQueryParameters, UserCreationDto, UserUpdateDto, UserDto>
 {
-    Task<User?> GetById(int id);
-    Task<User?> Delete(int id);
+    Task<UserDto?> GetById(int id);
+    Task<UserDto?> Delete(int id);
 }

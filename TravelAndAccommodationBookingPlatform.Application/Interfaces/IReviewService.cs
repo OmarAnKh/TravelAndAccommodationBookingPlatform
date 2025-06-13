@@ -6,6 +6,6 @@ namespace TravelAndAccommodationBookingPlatform.Application.Interfaces;
 
 public interface IReviewService : IService<Review, ReviewQueryParameters, ReviewCreationDto, ReviewUpdateDto, ReviewDto>
 {
-    Task<Review?> GetById(int id);
-    Task<Review?> Delete(int id);
+    Task<ReviewDto?> GetById(int id);
+    Task<ReviewDto?> Delete(int id);
 }

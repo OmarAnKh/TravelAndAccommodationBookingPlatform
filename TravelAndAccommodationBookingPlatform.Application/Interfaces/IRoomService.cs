@@ -6,6 +6,6 @@ namespace TravelAndAccommodationBookingPlatform.Application.Interfaces;
 
 public interface IRoomService : IService<Room, RoomQueryParameters, RoomCreationDto, RoomUpdateDto, RoomDto>
 {
-    Task<Room?> GetById(int id);
-    Task<Room?> Delete(int id);
+    Task<RoomDto?> GetById(int id);
+    Task<RoomDto?> Delete(int id);
 }

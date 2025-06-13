@@ -6,6 +6,6 @@ namespace TravelAndAccommodationBookingPlatform.Application.Interfaces;
 
 public interface ILocationService : IService<Location, LocationQueryParameters, LocationCreationDto, LocationUpdateDto, LocationDto>
 {
-    Task<Location?> GetById(int id);
-    Task<Location?> Delete(int id);
+    Task<LocationDto?> GetById(int id);
+    Task<LocationDto?> Delete(int id);
 }

@@ -6,6 +6,6 @@ namespace TravelAndAccommodationBookingPlatform.Application.Interfaces;
 
 public interface IReservationService : IService<Reservation, ReservationQueryParameters, ReservationCreationDto, ReservationUpdateDto, ReservationDto>
 {
-    Task<Reservation?> GetByUserAndRoomId(int userId, int roomId);
-    Task<Reservation?> DeleteByUserAndRoomId(int userId, int roomId);
+    Task<ReservationDto?> GetByUserAndRoomId(int userId, int roomId);
+    Task<ReservationDto?> DeleteByUserAndRoomId(int userId, int roomId);
 }
