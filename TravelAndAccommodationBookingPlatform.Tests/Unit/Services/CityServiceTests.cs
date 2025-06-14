@@ -163,7 +163,7 @@ public class CityServiceTests
 
     [Theory]
     [InlineData(-1)]
-    [InlineData(0)]
+    [InlineData(null)]
     public async Task GetById_ShouldReturnNull_WhenCityDoesNotExist(int invalidId)
     {
         // Arrange

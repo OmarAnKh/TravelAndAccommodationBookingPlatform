@@ -168,7 +168,7 @@ public class LocationServiceTests
 
     [Theory]
     [InlineData(-1)]
-    [InlineData(0)]
+    [InlineData(null)]
     public async Task GetById_ShouldReturnNull_WhenLocationDoesNotExist(int invalidId)
     {
         //Arrange
@@ -292,10 +292,10 @@ public class LocationServiceTests
         const int expectedHotelId = 1;
 
         _locationRepositoryMock.Setup(l => l.Delete(expectedHotelId)).ReturnsAsync((Location?)null);
-        
+
         //Act
         var result = await _locationService.Delete(expectedHotelId);
-        
+
         //Assert
         result.Should().BeNull();
     }

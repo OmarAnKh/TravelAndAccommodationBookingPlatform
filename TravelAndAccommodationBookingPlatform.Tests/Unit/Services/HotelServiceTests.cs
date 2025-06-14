@@ -179,7 +179,7 @@ public class HotelServiceTests
 
     [Theory]
     [InlineData(-1)]
-    [InlineData(0)]
+    [InlineData(null)]
     public async Task GetById_ShouldReturnNull_WhenHotelDoesNotExist(int invalidId)
     {
         // Arrange
