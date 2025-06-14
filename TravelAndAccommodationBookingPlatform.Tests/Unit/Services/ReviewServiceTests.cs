@@ -230,15 +230,13 @@ public class ReviewServiceTests
     public async Task UpdateAsync_ShouldReturnNull_WhenUpdateFails()
     {
         //Arrange
-        const int expectedId = 1;
-
         var updateDto = new ReviewUpdateDto()
         {
-            ReviewId = expectedId
+            ReviewId = 1
         };
         var review = new Review()
         {
-            ReviewId = expectedId
+            ReviewId = 1
         };
         _mapperMock.Setup(m => m.Map<Review>(updateDto)).Returns(review);
         _reviewRepositoryMock.Setup(r => r.UpdateAsync(review)).ReturnsAsync((Review?)null);
@@ -285,12 +283,12 @@ public class ReviewServiceTests
         result!.ReviewId.Should().Be(reviewId);
         result.Comment.Should().Be("Test");
     }
-    
+
     [Fact]
     public async Task Delete_ShouldReturnNull_WhenDeletionFails()
     {
         // Arrange
-        const int reviewId = 1;
+        const int reviewId = -1;
         _reviewRepositoryMock.Setup(r => r.Delete(reviewId)).ReturnsAsync((Review?)null);
 
         // Act
