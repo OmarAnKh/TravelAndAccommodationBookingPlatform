@@ -35,13 +35,13 @@ public class CityServiceTests
         const int expectedCount = 1;
 
         var queryParams = new CityQueryParameters();
-        var cities = new List<City> { new() { Id = cityId, Name = cityName } };
+        var cities = new List<City> { new City() { Id = cityId, Name = cityName } };
         var metaData = new PaginationMetaData(totalCount, pageNumber, pageSize);
 
         _cityRepoMock.Setup(r => r.GetAll(queryParams)).ReturnsAsync((cities, metaData));
         _mapperMock.Setup(m => m.Map<IEnumerable<CityDto>>(cities)).Returns(new List<CityDto>
         {
-            new() { Id = cityId, Name = cityName }
+            new CityDto() { Id = cityId, Name = cityName }
         });
 
         // Act
@@ -147,7 +147,7 @@ public class CityServiceTests
     public async Task GetById_ShouldReturnDto_WhenCityExists(int cityId, string cityName)
     {
         // Arrange
-        var city = new City { Id = cityId, Name = cityName };
+        var city = new City() { Id = cityId, Name = cityName };
 
         _cityRepoMock.Setup(r => r.GetById(cityId)).ReturnsAsync(city);
         _mapperMock.Setup(m => m.Map<CityDto>(city)).Returns(new CityDto { Id = cityId, Name = cityName });
@@ -183,9 +183,9 @@ public class CityServiceTests
         const int cityId = 2;
         const string updatedCityName = "Updated City";
 
-        var updateDto = new CityUpdateDto { CityId = cityId, Name = updatedCityName };
-        var city = new City { Id = cityId, Name = updatedCityName };
-        var updated = new City { Id = cityId, Name = updatedCityName };
+        var updateDto = new CityUpdateDto() { CityId = cityId, Name = updatedCityName };
+        var city = new City() { Id = cityId, Name = updatedCityName };
+        var updated = new City() { Id = cityId, Name = updatedCityName };
 
         _mapperMock.Setup(m => m.Map<City>(updateDto)).Returns(city);
         _cityRepoMock.Setup(r => r.UpdateAsync(city)).ReturnsAsync(updated);
@@ -226,7 +226,7 @@ public class CityServiceTests
         const int cityId = 4;
         const string cityName = "To Be Deleted";
 
-        var city = new City { Id = cityId, Name = cityName };
+        var city = new City() { Id = cityId, Name = cityName };
 
         _cityRepoMock.Setup(r => r.Delete(cityId)).ReturnsAsync(city);
         _mapperMock.Setup(m => m.Map<CityDto>(city)).Returns(new CityDto { Id = cityId, Name = cityName });
