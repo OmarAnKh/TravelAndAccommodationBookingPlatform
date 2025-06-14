@@ -104,9 +104,7 @@ public class HotelServiceTests
             CityId = creationDto.CityId,
             Owner = creationDto.Owner,
             Description = creationDto.Description,
-            Thumbnail = creationDto.Thumbnail,
-            CreatedAt = creationDto.CreatedAt,
-            UpdatedAt = creationDto.UpdatedAt
+            Thumbnail = creationDto.Thumbnail
         };
 
         _mapperMock.Setup(h => h.Map<Hotel>(creationDto)).Returns(hotel);
@@ -118,9 +116,7 @@ public class HotelServiceTests
             CityId = creationDto.CityId,
             Owner = creationDto.Owner,
             Description = creationDto.Description,
-            Thumbnail = creationDto.Thumbnail,
-            CreatedAt = creationDto.CreatedAt,
-            UpdatedAt = creationDto.UpdatedAt
+            Thumbnail = creationDto.Thumbnail
         });
 
         // Act
@@ -134,8 +130,7 @@ public class HotelServiceTests
         result.Owner.Should().Be(owner);
         result.Description.Should().Be(description);
         result.Thumbnail.Should().Be(thumbnail);
-        result.CreatedAt.Should().Be(creationDto.CreatedAt);
-        result.UpdatedAt.Should().Be(creationDto.UpdatedAt);
+
     }
 
     [Fact]

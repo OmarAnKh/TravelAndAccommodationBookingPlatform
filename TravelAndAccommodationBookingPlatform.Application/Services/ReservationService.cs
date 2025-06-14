@@ -48,6 +48,11 @@ public class ReservationService : IReservationService
         }
         var reservation = _mapper.Map<Reservation>(entity);
         var result = await _reservationRepository.Create(reservation);
+        if (result is null)
+        {
+            return null;
+        }
+        await _reservationRepository.SaveChangesAsync();
         return _mapper.Map<ReservationDto>(result);
     }
     public async Task<ReservationDto?> UpdateAsync(ReservationUpdateDto entity)
@@ -58,6 +63,7 @@ public class ReservationService : IReservationService
         {
             return null;
         }
+        await _reservationRepository.SaveChangesAsync();
         return _mapper.Map<ReservationDto>(result);
     }
 
@@ -78,6 +84,7 @@ public class ReservationService : IReservationService
         {
             return null;
         }
+        await _reservationRepository.SaveChangesAsync();
         return _mapper.Map<ReservationDto>(reservation);
     }
 

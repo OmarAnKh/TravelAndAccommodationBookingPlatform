@@ -177,7 +177,7 @@ public class LocationServiceTests
         //Act
         var result = await _locationService.GetById(invalidId);
 
-        //
+        //Assert
         result.Should().BeNull();
     }
 

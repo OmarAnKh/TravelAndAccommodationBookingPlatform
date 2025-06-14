@@ -10,7 +10,6 @@ public class CityUpdateDto
     public string? Country { get; set; }
 
     public string? PostOffice { get; set; }
-    public DateTime? UpdatedAt { get; set; } = DateTime.Now;
 
 
 }

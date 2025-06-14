@@ -63,17 +63,13 @@ public class CityServiceTests
         const string thumbnail = "jericho.jpg";
         const string country = "Palestine";
         const string postOffice = "12345";
-        var createdAt = DateTime.Now;
-        var updatedAt = DateTime.Now;
 
         var creationDto = new CityCreationDto
         {
             Name = cityName,
             Thumbnail = thumbnail,
             Country = country,
-            PostOffice = postOffice,
-            CreatedAt = createdAt,
-            UpdatedAt = updatedAt
+            PostOffice = postOffice
         };
 
         var city = new City
@@ -81,9 +77,7 @@ public class CityServiceTests
             Name = creationDto.Name,
             Thumbnail = creationDto.Thumbnail,
             Country = creationDto.Country,
-            PostOffice = creationDto.PostOffice,
-            CreatedAt = creationDto.CreatedAt,
-            UpdatedAt = creationDto.UpdatedAt
+            PostOffice = creationDto.PostOffice
         };
 
         var created = new City
@@ -92,9 +86,7 @@ public class CityServiceTests
             Name = cityName,
             Thumbnail = thumbnail,
             Country = country,
-            PostOffice = postOffice,
-            CreatedAt = creationDto.CreatedAt,
-            UpdatedAt = creationDto.UpdatedAt
+            PostOffice = postOffice
         };
 
         _mapperMock.Setup(m => m.Map<City>(creationDto)).Returns(city);
@@ -105,9 +97,7 @@ public class CityServiceTests
             Name = cityName,
             Thumbnail = thumbnail,
             Country = country,
-            PostOffice = postOffice,
-            CreatedAt = creationDto.CreatedAt,
-            UpdatedAt = creationDto.UpdatedAt
+            PostOffice = postOffice
         });
 
         // Act

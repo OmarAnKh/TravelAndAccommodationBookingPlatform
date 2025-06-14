@@ -27,18 +27,23 @@ public class HotelService : IHotelService
     public async Task<HotelDto?> Create(HotelCreationDto entity)
     {
         var hotel = _mapper.Map<Hotel>(entity);
+        hotel.CreatedAt = DateTime.UtcNow;
+        hotel.UpdatedAt = DateTime.UtcNow;
+
         var createResult = await _hotelRepository.Create(hotel);
         if (createResult is null)
         {
             return null;
         }
+
         await _hotelRepository.SaveChangesAsync();
         return _mapper.Map<HotelDto>(createResult);
-
     }
+
     public async Task<HotelDto?> UpdateAsync(HotelUpdateDto entity)
     {
         var hotel = _mapper.Map<Hotel>(entity);
+        hotel.UpdatedAt = DateTime.UtcNow;
         var updateResult = await _hotelRepository.UpdateAsync(hotel);
         if (updateResult is null)
         {

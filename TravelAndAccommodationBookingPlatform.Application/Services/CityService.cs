@@ -31,6 +31,8 @@ public class CityService : ICityService
     public async Task<CityDto?> Create(CityCreationDto entity)
     {
         var city = _mapper.Map<City>(entity);
+        city.CreatedAt = DateTime.UtcNow;
+        city.UpdatedAt = DateTime.UtcNow;
         var creationResult = await _cityRepository.Create(city);
         if (creationResult == null)
         {
@@ -44,6 +46,7 @@ public class CityService : ICityService
     public async Task<CityDto?> UpdateAsync(CityUpdateDto entity)
     {
         var city = _mapper.Map<City>(entity);
+        city.UpdatedAt = DateTime.UtcNow;
         var updateResult = await _cityRepository.UpdateAsync(city);
         if (updateResult == null)
         {
