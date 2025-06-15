@@ -1,10 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 using TravelAndAccommodationBookingPlatform.Tests.enums;
 using TravelAndAccommodationBookingPlatform.Tests.Interfaces;
 
-namespace TravelAndAccommodationBookingPlatform.Tests.common.DatabaseFactories;
+namespace TravelAndAccommodationBookingPlatform.Tests.common;
 
 public class DbContextFactory : IDbContextFactory
 {

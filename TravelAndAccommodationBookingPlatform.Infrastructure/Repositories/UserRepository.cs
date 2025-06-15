@@ -68,6 +68,15 @@ public class UserRepository : IUserRepository
         _context.Users.Remove(user);
         return user;
     }
+    public async Task<User?> GetByEmail(string email)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+    }
+    public async Task<User?> GetByUsername(string username)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+    }
 
     private static IQueryable<User> ApplyUserFilters(IQueryable<User> query, UserQueryParameters queryParams)
     {

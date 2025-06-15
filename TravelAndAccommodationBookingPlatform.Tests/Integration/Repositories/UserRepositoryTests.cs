@@ -5,7 +5,7 @@ using TravelAndAccommodationBookingPlatform.Domain.Enums;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Repositories;
-using TravelAndAccommodationBookingPlatform.Tests.common.DatabaseFactories;
+using TravelAndAccommodationBookingPlatform.Tests.common;
 using TravelAndAccommodationBookingPlatform.Tests.enums;
 
 namespace TravelAndAccommodationBookingPlatform.Tests.Integration.Repositories;

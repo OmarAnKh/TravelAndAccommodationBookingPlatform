@@ -8,4 +8,6 @@ public interface IUserService : IService<User, UserQueryParameters, UserCreation
 {
     Task<UserDto?> GetById(int id);
     Task<UserDto?> Delete(int id);
+    Task<UserDto?> GetByEmail(string email);
+    Task<UserDto?> GetByUsername(string username);
 }

@@ -280,7 +280,7 @@ public class ReviewServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result!.ReviewId.Should().Be(reviewId);
+        result.ReviewId.Should().Be(reviewId);
         result.Comment.Should().Be("Test");
     }
 
