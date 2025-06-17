@@ -5,6 +5,6 @@ namespace TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 
 public interface ICityRepository : IRepository<City, CityQueryParameters>
 {
-    Task<City?> GetById(int id);
-    Task<City?> Delete(int id);
+    Task<City?> GetByIdAsync(int id);
+    Task<City?> DeleteAsync(int id);
 }

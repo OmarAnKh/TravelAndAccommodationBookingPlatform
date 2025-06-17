@@ -1,5 +1,6 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using TravelAndAccommodationBookingPlatform.Application.DTOs.City;
-using TravelAndAccommodationBookingPlatform.Domain.Common;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 
@@ -7,16 +8,9 @@ namespace TravelAndAccommodationBookingPlatform.Application.Interfaces;
 
 public interface ICityService : IService<City, CityQueryParameters, CityCreationDto, CityUpdateDto, CityDto>
 {
-    Task<CityDto?> GetById(int id);
-    Task<CityDto?> Delete(int id);
-}
+    Task<CityDto?> GetByIdAsync(int id);
+    Task<CityDto?> DeleteAsync(int id);
+    Task<CityDto?> CreateAsync(CityCreationDto entity, IFormFile file);
+    Task<CityDto?> UpdateAsync(int id, JsonPatchDocument<CityUpdateDto> patchDocument);
 
-//
-// public interface ICityService
-// {
-//     Task<(IEnumerable<CityDto>, PaginationMetaData)> GetAll(CityQueryParameters queryParams);
-//     Task<CityDto?> Create(CityCreationDto entity);
-//     Task<CityDto?> UpdateAsync(CityUpdateDto entity);
-//     Task<CityDto?> GetById(int id);
-//     Task<CityDto?> Delete(int id);
-// }
+}

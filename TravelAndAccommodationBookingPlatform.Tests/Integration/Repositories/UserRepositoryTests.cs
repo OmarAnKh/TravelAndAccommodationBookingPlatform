@@ -47,7 +47,7 @@ public class UserRepositoryTests : IDisposable
         };
 
         //Act
-        var (entities, paginationMetaData) = await _userRepository.GetAll(queryParameters);
+        var (entities, paginationMetaData) = await _userRepository.GetAllAsync(queryParameters);
         var result = entities.ToList();
 
         var expectedCount = Math.Max(0, Math.Min(result.Count, pageSize));
@@ -82,7 +82,7 @@ public class UserRepositoryTests : IDisposable
         };
 
         // Act
-        var (result, pagination) = await _userRepository.GetAll(queryParams);
+        var (result, pagination) = await _userRepository.GetAllAsync(queryParams);
         var expected = _users.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(username))
@@ -121,7 +121,7 @@ public class UserRepositoryTests : IDisposable
         //Arrange
 
         //Act
-        var (entities, paginationMetaData) = await _userRepository.GetAll(new UserQueryParameters());
+        var (entities, paginationMetaData) = await _userRepository.GetAllAsync(new UserQueryParameters());
 
         //Assert
         paginationMetaData.CurrentPage.Should().Be(1);
@@ -137,7 +137,7 @@ public class UserRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         //Act
-        var result = await _userRepository.GetById(_users[0].Id);
+        var result = await _userRepository.GetByIdAsync(_users[0].Id);
 
         //Assert
         result.Should().BeEquivalentTo(_users[0]);
@@ -154,7 +154,7 @@ public class UserRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         //Act
-        var result = await _userRepository.GetById(roomId);
+        var result = await _userRepository.GetByIdAsync(roomId);
 
         //Assert
         result.Should().BeNull();
@@ -167,7 +167,7 @@ public class UserRepositoryTests : IDisposable
         var user = new User { Id = 3, Username = "carol", Password = "pass123", Email = "carol@example.com" };
 
         //Act
-        var createResult = await _userRepository.Create(user);
+        var createResult = await _userRepository.CreateAsync(user);
         var saveChangesResult = await _userRepository.SaveChangesAsync();
 
         //Assert
@@ -176,43 +176,6 @@ public class UserRepositoryTests : IDisposable
 
     }
 
-    [Fact]
-    public async Task UpdateUser_WithValidData_ShouldReturnUpdatedUser()
-    {
-        //Arrange
-        await _context.Users.AddRangeAsync(_users);
-        await _context.SaveChangesAsync();
-
-        var user = await _userRepository.GetById(_users[0].Id);
-        if (user == null)
-        {
-            Assert.Fail();
-        }
-        //Act
-        user.Username = "carol";
-        var updateResult = await _userRepository.UpdateAsync(user);
-        var saveChangesResult = await _userRepository.SaveChangesAsync();
-
-        //Assert
-        updateResult.Should().BeEquivalentTo(user);
-        saveChangesResult.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task UpdateUser_WithInvalidData_ShouldReturnNotFound()
-    {
-        //Arrange
-        var user = new User { Id = -1, Username = "carol", Password = "pass123", Email = "carol@example.com" };
-
-        //Act 
-        var updateResult = await _userRepository.UpdateAsync(user);
-        var saveChangesResult = await _userRepository.SaveChangesAsync();
-
-        //Assert 
-        updateResult.Should().BeNull();
-        saveChangesResult.Should().Be(0);
-
-    }
 
     [Fact]
     public async Task DeleteUser_WithValidData_ShouldReturnDeletedUser()
@@ -220,16 +183,16 @@ public class UserRepositoryTests : IDisposable
         //Arrange
         await _context.Users.AddRangeAsync(_users);
         await _context.SaveChangesAsync();
-        var user = await _userRepository.GetById(_users[0].Id);
+        var user = await _userRepository.GetByIdAsync(_users[0].Id);
         if (user == null)
         {
             Assert.Fail();
         }
 
         //Act
-        var deleteResult = await _userRepository.Delete(user.Id);
+        var deleteResult = await _userRepository.DeleteAsync(user.Id);
         var saveChangesResult = await _userRepository.SaveChangesAsync();
-        var getResult = await _userRepository.GetById(_users[0].Id);
+        var getResult = await _userRepository.GetByIdAsync(_users[0].Id);
 
         //Assert
         deleteResult.Should().BeEquivalentTo(user);
@@ -244,7 +207,7 @@ public class UserRepositoryTests : IDisposable
         //Arrange
 
         //Act
-        var deleteResult = await _userRepository.Delete(-1);
+        var deleteResult = await _userRepository.DeleteAsync(-1);
         var saveChangesResult = await _userRepository.SaveChangesAsync();
 
         //Assert

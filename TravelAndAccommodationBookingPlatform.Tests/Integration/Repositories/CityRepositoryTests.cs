@@ -45,7 +45,7 @@ public class CityRepositoryTests : IDisposable
         var queryParameters = new CityQueryParameters { Page = pageNumber, PageSize = pageSize };
 
         // Act
-        var (result, paginationMetaData) = await _cityRepository.GetAll(queryParameters);
+        var (result, paginationMetaData) = await _cityRepository.GetAllAsync(queryParameters);
         List<City> resultList = result.ToList();
 
         int expectedCount = Math.Max(0, Math.Min(pageSize, resultList.Count));
@@ -72,7 +72,7 @@ public class CityRepositoryTests : IDisposable
         };
 
         // Act
-        var (result, paginationMetaData) = await _cityRepository.GetAll(queryParameters);
+        var (result, paginationMetaData) = await _cityRepository.GetAllAsync(queryParameters);
         List<City> resultList = result.ToList();
 
         var expectedResult = _cities.Where(c => c.Name.Contains(searchTerm) || c.Country.Contains(searchTerm)).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToList();
@@ -91,7 +91,7 @@ public class CityRepositoryTests : IDisposable
 
 
         // Act
-        var (result, paginationMetaData) = await _cityRepository.GetAll(new CityQueryParameters());
+        var (result, paginationMetaData) = await _cityRepository.GetAllAsync(new CityQueryParameters());
 
         // Assert
         paginationMetaData.CurrentPage.Should().Be(1);
@@ -106,7 +106,7 @@ public class CityRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
         var cityId = _cities[0].Id;
         // Act
-        var result = await _cityRepository.GetById(cityId);
+        var result = await _cityRepository.GetByIdAsync(cityId);
 
         // Assert
         result.Should().NotBeNull();
@@ -119,7 +119,7 @@ public class CityRepositoryTests : IDisposable
     public async Task GetById_WithInvalidId_ShouldReturnNull(int cityId)
     {
         // Act
-        var result = await _cityRepository.GetById(cityId);
+        var result = await _cityRepository.GetByIdAsync(cityId);
 
         // Assert
         result.Should().BeNull();
@@ -132,40 +132,11 @@ public class CityRepositoryTests : IDisposable
         var city = new City { Name = "New City", Country = "New Country", Thumbnail = "New City.jpg", PostOffice = "75000" };
 
         // Act
-        var result = await _cityRepository.Create(city);
+        var result = await _cityRepository.CreateAsync(city);
         await _cityRepository.SaveChangesAsync();
         // Assert
         result.Should().BeEquivalentTo(city);
         _context.Cities.Should().Contain(city);
-    }
-
-    [Fact]
-    public async Task Update_WithValidCity_ShouldUpdateCityInContext()
-    {
-        // Arrange
-        await _context.Cities.AddRangeAsync(_cities);
-        await _context.SaveChangesAsync();
-        var updatedCity = new City { Id = 1, Name = "Updated Name", Country = "Updated Country", Thumbnail = "paris.jpg", PostOffice = "75000" };
-
-        // Act
-        var result = await _cityRepository.UpdateAsync(updatedCity);
-        await _cityRepository.SaveChangesAsync();
-        // Assert
-        result.Should().BeEquivalentTo(updatedCity, options => options.Excluding(c => c.Id));
-        _context.Entry(result!).State.Should().Be(EntityState.Unchanged);
-    }
-    [Fact]
-    public async Task Update_WithInvalidCityId_ShouldReturnNull()
-    {
-        // Arrange
-
-        var updatedCity = new City { Id = -1, Name = "Updated Name", Country = "Updated Country", Thumbnail = "paris.jpg", PostOffice = "75000" };
-
-        // Act
-        var result = await _cityRepository.UpdateAsync(updatedCity);
-        await _cityRepository.SaveChangesAsync();
-        // Assert
-        result.Should().Be(null);
     }
 
 
@@ -177,9 +148,9 @@ public class CityRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
         var cityId = _cities[0].Id;
         // Act
-        var deleteResult = await _cityRepository.Delete(cityId);
+        var deleteResult = await _cityRepository.DeleteAsync(cityId);
         var saveChangesResult = await _cityRepository.SaveChangesAsync();
-        var getResult = await _cityRepository.GetById(cityId);
+        var getResult = await _cityRepository.GetByIdAsync(cityId);
 
         // Assert
         deleteResult.Should().NotBeNull();
@@ -192,7 +163,7 @@ public class CityRepositoryTests : IDisposable
     public async Task Delete_WithInvalidId_ShouldReturnNull()
     {
         // Act
-        var result = await _cityRepository.Delete(-1);
+        var result = await _cityRepository.DeleteAsync(-1);
 
         // Assert
         result.Should().BeNull();

@@ -1,5 +1,6 @@
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.AspNetCore.JsonPatch;
 using Moq;
 using TravelAndAccommodationBookingPlatform.Application.DTOs.User;
 using TravelAndAccommodationBookingPlatform.Application.Services;
@@ -30,11 +31,11 @@ public class UserServiceTests
         var queryParams = new UserQueryParameters();
         var users = new List<User> { new() { Id = 1, Username = "john", Email = "john@example.com" } };
         var metadata = new PaginationMetaData(1, 1, 10);
-        _userRepoMock.Setup(x => x.GetAll(queryParams)).ReturnsAsync((users, metadata));
+        _userRepoMock.Setup(x => x.GetAllAsync(queryParams)).ReturnsAsync((users, metadata));
         _mapperMock.Setup(x => x.Map<IEnumerable<UserDto>>(users)).Returns(users.Select(u => new UserDto { Id = u.Id }));
 
         // Act
-        var (result, meta) = await _sut.GetAll(queryParams);
+        var (result, meta) = await _sut.GetAllAsync(queryParams);
 
         // Assert
         result.Should().HaveCount(1);
@@ -44,14 +45,14 @@ public class UserServiceTests
     [Fact]
     public async Task Create_ShouldReturnNull_WhenUserExists()
     {
-        
+
         //Arrange
         var dto = new UserCreationDto { Username = "existing", Email = "existing@email.com" };
-        _userRepoMock.Setup(x => x.GetByUsername(dto.Username)).ReturnsAsync(new User());
-        _userRepoMock.Setup(x => x.GetByEmail(dto.Email)).ReturnsAsync((User)null);
+        _userRepoMock.Setup(x => x.GetByUsernameAsync(dto.Username)).ReturnsAsync(new User());
+        _userRepoMock.Setup(x => x.GetByEmailAsync(dto.Email)).ReturnsAsync((User)null);
 
         //Act
-        var result = await _sut.Create(dto);
+        var result = await _sut.CreateAsync(dto);
 
         //Assert
         result.Should().BeNull();
@@ -71,57 +72,101 @@ public class UserServiceTests
         var user = new User { Id = 1 };
         var createdUser = new User { Id = 1 };
 
-        _userRepoMock.Setup(x => x.GetByUsername(dto.Username)).ReturnsAsync((User)null);
-        _userRepoMock.Setup(x => x.GetByEmail(dto.Email)).ReturnsAsync((User)null);
+        _userRepoMock.Setup(x => x.GetByUsernameAsync(dto.Username)).ReturnsAsync((User)null);
+        _userRepoMock.Setup(x => x.GetByEmailAsync(dto.Email)).ReturnsAsync((User)null);
         _mapperMock.Setup(x => x.Map<User>(dto)).Returns(user);
-        _userRepoMock.Setup(x => x.Create(user)).ReturnsAsync(createdUser);
+        _userRepoMock.Setup(x => x.CreateAsync(user)).ReturnsAsync(createdUser);
         _mapperMock.Setup(x => x.Map<UserDto>(createdUser)).Returns(new UserDto { Id = 1 });
 
         //Act
-        var result = await _sut.Create(dto);
+        var result = await _sut.CreateAsync(dto);
 
         //Assert
         result.Should().NotBeNull();
         result.Id.Should().Be(1);
     }
 
-    
+    [Fact]
+    public async Task UpdateAsync_ShouldReturnNull_WhenUserNotFound()
+    {
+        // Arrange
+        const int userId = 1;
+        const string newUsername = "updated";
+
+        var patchDoc = new JsonPatchDocument<UserUpdateDto>();
+        patchDoc.Replace(x => x.Username, newUsername);
+
+        _userRepoMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync((User?)null);
+
+        // Act
+        var result = await _sut.UpdateAsync(userId, patchDoc);
+
+        // Assert
+        result.Should().BeNull();
+        _userRepoMock.Verify(x => x.GetByIdAsync(userId), Times.Once);
+        _userRepoMock.Verify(x => x.SaveChangesAsync(), Times.Never);
+    }
+
     [Fact]
     public async Task UpdateAsync_ShouldReturnNull_WhenUsernameExists()
     {
-        //Arrange
-        var dto = new UserUpdateDto { Id = 1, Username = "taken" };
-        _userRepoMock.Setup(x => x.GetByUsername(dto.Username)).ReturnsAsync(new User { Id = 2 });
+        // Arrange
+        const int userId = 1;
+        const string takenUsername = "taken";
 
-        //Act
-        var result = await _sut.UpdateAsync(dto);
+        var existingUser = new User { Id = userId, Username = "original" };
+        var userUpdateDto = new UserUpdateDto { Id = userId, Username = takenUsername };
 
-        //Assert
+        var patchDoc = new JsonPatchDocument<UserUpdateDto>();
+        patchDoc.Replace(x => x.Username, takenUsername);
+
+        _userRepoMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(existingUser);
+        _mapperMock.Setup(x => x.Map<UserUpdateDto>(existingUser)).Returns(userUpdateDto);
+
+        // Act
+        var result = await _sut.UpdateAsync(userId, patchDoc);
+
+        // Assert
         result.Should().BeNull();
+        _userRepoMock.Verify(x => x.GetByIdAsync(userId), Times.Once);
+        _userRepoMock.Verify(x => x.SaveChangesAsync(), Times.Never);
     }
 
     [Fact]
     public async Task UpdateAsync_ShouldReturnUpdatedUser_WhenValid()
     {
-        //Arrange
-        var dto = new UserUpdateDto { Id = 1, Username = "updated" };
-        var user = new User { Id = 1 };
-        var updatedUser = new User { Id = 1 };
+        // Arrange
+        const int userId = 1;
+        const string originalUsername = "original";
+        const string updatedUsername = "updated";
 
-        _userRepoMock.Setup(x => x.GetByUsername(dto.Username)).ReturnsAsync((User)null);
-        _mapperMock.Setup(x => x.Map<User>(dto)).Returns(user);
-        _userRepoMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(updatedUser);
-        _mapperMock.Setup(x => x.Map<UserDto>(updatedUser)).Returns(new UserDto { Id = 1 });
+        var existingUser = new User { Id = userId, Username = originalUsername };
+        var userUpdateDto = new UserUpdateDto { Id = userId, Username = updatedUsername };
+        var expectedUserDto = new UserDto { Id = userId, Username = updatedUsername };
 
-        //Act
-        var result = await _sut.UpdateAsync(dto);
+        var patchDoc = new JsonPatchDocument<UserUpdateDto>();
+        patchDoc.Replace(x => x.Username, updatedUsername);
 
-        //Assert
+        _userRepoMock.Setup(x => x.GetByIdAsync(userId)).ReturnsAsync(existingUser);
+        _mapperMock.Setup(x => x.Map<UserUpdateDto>(existingUser)).Returns(userUpdateDto);
+        _userRepoMock.Setup(x => x.GetByUsernameAsync(updatedUsername)).ReturnsAsync((User?)null);
+        _mapperMock.Setup(x => x.Map(userUpdateDto, existingUser));
+        _mapperMock.Setup(x => x.Map<UserDto>(existingUser)).Returns(expectedUserDto);
+        _userRepoMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
+
+        // Act
+        var result = await _sut.UpdateAsync(userId, patchDoc);
+
+        // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be(1);
+        result.Id.Should().Be(userId);
+        result.Username.Should().Be(updatedUsername);
+        _userRepoMock.Verify(x => x.GetByIdAsync(userId), Times.Once);
+        _userRepoMock.Verify(x => x.GetByUsernameAsync(updatedUsername), Times.Once);
+        _userRepoMock.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 
-    
+
     [Theory]
     [InlineData(1)]
     public async Task GetById_ShouldReturnMappedUser_WhenExists(int id)
@@ -129,11 +174,11 @@ public class UserServiceTests
         //Arrange
         var user = new User { Id = id };
         var dto = new UserDto { Id = id };
-        _userRepoMock.Setup(x => x.GetById(id)).ReturnsAsync(user);
+        _userRepoMock.Setup(x => x.GetByIdAsync(id)).ReturnsAsync(user);
         _mapperMock.Setup(x => x.Map<UserDto>(user)).Returns(dto);
 
         //Act
-        var result = await _sut.GetById(id);
+        var result = await _sut.GetByIdAsync(id);
 
         //Assert
         result.Should().NotBeNull();
@@ -144,10 +189,10 @@ public class UserServiceTests
     public async Task GetById_ShouldReturnNull_WhenUserDoesNotExist()
     {
         //Arrange
-        _userRepoMock.Setup(x => x.GetById(-1)).ReturnsAsync((User)null);
+        _userRepoMock.Setup(x => x.GetByIdAsync(-1)).ReturnsAsync((User)null);
 
         //Act
-        var result = await _sut.GetById(-1);
+        var result = await _sut.GetByIdAsync(-1);
 
         //Assert
         result.Should().BeNull();
@@ -157,10 +202,10 @@ public class UserServiceTests
     public async Task Delete_ShouldReturnNull_WhenUserNotFound()
     {
         //Arrange
-        _userRepoMock.Setup(x => x.Delete(-1)).ReturnsAsync((User)null);
+        _userRepoMock.Setup(x => x.DeleteAsync(-1)).ReturnsAsync((User)null);
 
         //Act
-        var result = await _sut.Delete(-1);
+        var result = await _sut.DeleteAsync(-1);
 
         //Assert
         result.Should().BeNull();
@@ -171,11 +216,11 @@ public class UserServiceTests
     {
         //Arrange
         var user = new User { Id = 1 };
-        _userRepoMock.Setup(x => x.Delete(1)).ReturnsAsync(user);
+        _userRepoMock.Setup(x => x.DeleteAsync(1)).ReturnsAsync(user);
         _mapperMock.Setup(x => x.Map<UserDto>(user)).Returns(new UserDto { Id = 1 });
 
         //Act
-        var result = await _sut.Delete(1);
+        var result = await _sut.DeleteAsync(1);
 
         //Assert
         result.Should().NotBeNull();
@@ -187,11 +232,11 @@ public class UserServiceTests
     {
         //Arrange
         var user = new User { Id = 1, Email = "test@example.com" };
-        _userRepoMock.Setup(x => x.GetByEmail(user.Email)).ReturnsAsync(user);
+        _userRepoMock.Setup(x => x.GetByEmailAsync(user.Email)).ReturnsAsync(user);
         _mapperMock.Setup(x => x.Map<UserDto>(user)).Returns(new UserDto { Id = 1, Email = "test@example.com" });
 
         //Act
-        var result = await _sut.GetByEmail(user.Email);
+        var result = await _sut.GetByEmailAsync(user.Email);
 
         //Assert
         result.Should().NotBeNull();
@@ -202,10 +247,10 @@ public class UserServiceTests
     public async Task GetByEmail_ShouldReturnNull_WhenNotFound()
     {
         //Arrange
-        _userRepoMock.Setup(x => x.GetByEmail("none")).ReturnsAsync((User)null);
+        _userRepoMock.Setup(x => x.GetByEmailAsync("none")).ReturnsAsync((User)null);
 
         //Act
-        var result = await _sut.GetByEmail("none");
+        var result = await _sut.GetByEmailAsync("none");
 
         //Assert
         result.Should().BeNull();
@@ -216,12 +261,12 @@ public class UserServiceTests
     {
         //Arrange
         var user = new User { Id = 2, Username = "ahmad" };
-        _userRepoMock.Setup(x => x.GetByUsername(user.Username)).ReturnsAsync(user);
+        _userRepoMock.Setup(x => x.GetByUsernameAsync(user.Username)).ReturnsAsync(user);
         _mapperMock.Setup(x => x.Map<UserDto>(user)).Returns(new UserDto { Id = 2, Username = "ahmad" });
 
         //Act
-        var result = await _sut.GetByUsername(user.Username);
-        
+        var result = await _sut.GetByUsernameAsync(user.Username);
+
         //Assert
         result.Should().NotBeNull();
         result.Username.Should().Be(user.Username);
@@ -231,12 +276,12 @@ public class UserServiceTests
     public async Task GetByUsername_ShouldReturnNull_WhenNotFound()
     {
         //Arrange
-        _userRepoMock.Setup(x => x.GetByUsername("notfound")).ReturnsAsync((User)null);
+        _userRepoMock.Setup(x => x.GetByUsernameAsync("notfound")).ReturnsAsync((User)null);
 
         //Act
-        var result = await _sut.GetByUsername("notfound");
+        var result = await _sut.GetByUsernameAsync("notfound");
 
-        
+
         //Assert
         result.Should().BeNull();
     }

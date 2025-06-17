@@ -15,7 +15,7 @@ public class LocationRepository : ILocationRepository
     {
         _context = context;
     }
-    public async Task<(IEnumerable<Location>, PaginationMetaData)> GetAll(LocationQueryParameters queryParams)
+    public async Task<(IEnumerable<Location>, PaginationMetaData)> GetAllAsync(LocationQueryParameters queryParams)
     {
         var query = _context.Locations.AsQueryable();
 
@@ -41,27 +41,18 @@ public class LocationRepository : ILocationRepository
         return (resultCollection, paginationMetaData);
     }
 
-    public async Task<Location?> GetById(int id)
+    public async Task<Location?> GetByIdAsync(int id)
     {
         var location = await _context.Locations.FirstOrDefaultAsync(l => l.HotelId == id);
         return location;
     }
-    public async Task<Location?> Create(Location entity)
+    public async Task<Location?> CreateAsync(Location entity)
     {
         var result = await _context.Locations.AddAsync(entity);
         return result.Entity;
     }
-    public async Task<Location?> UpdateAsync(Location entity)
-    {
-        var location = await _context.Locations.FirstOrDefaultAsync(c => c.HotelId == entity.HotelId);
-        if (location == null)
-        {
-            return null;
-        }
-        _context.Entry(location).CurrentValues.SetValues(entity);
-        return location;
-    }
-    public async Task<Location?> Delete(int id)
+
+    public async Task<Location?> DeleteAsync(int id)
     {
         var location = await _context.Locations.FirstOrDefaultAsync(l => l.HotelId == id);
         if (location == null)

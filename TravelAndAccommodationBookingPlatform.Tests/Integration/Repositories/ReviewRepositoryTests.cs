@@ -96,7 +96,7 @@ public class ReviewRepositoryTests : IDisposable
         };
 
         //Act 
-        var (entities, paginationMetaData) = await _reviewRepository.GetAll(queryParameters);
+        var (entities, paginationMetaData) = await _reviewRepository.GetAllAsync(queryParameters);
         var result = entities.ToList();
 
         int expectedCount = Math.Max(0, Math.Min(result.Count, pageSize));
@@ -127,7 +127,7 @@ public class ReviewRepositoryTests : IDisposable
         };
 
         // Act
-        var (entities, paginationMetaData) = await _reviewRepository.GetAll(queryParams);
+        var (entities, paginationMetaData) = await _reviewRepository.GetAllAsync(queryParams);
         var resultList = entities.ToList();
 
         var expected = _reviews.AsQueryable();
@@ -158,7 +158,7 @@ public class ReviewRepositoryTests : IDisposable
         //Arrange
 
         //Act
-        var (entities, paginationMetaData) = await _reviewRepository.GetAll(new ReviewQueryParameters());
+        var (entities, paginationMetaData) = await _reviewRepository.GetAllAsync(new ReviewQueryParameters());
 
         //Assert
         paginationMetaData.CurrentPage.Should().Be(1);
@@ -174,7 +174,7 @@ public class ReviewRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         //Act
-        var result = await _reviewRepository.GetById(_reviews[0].ReviewId);
+        var result = await _reviewRepository.GetByIdAsync(_reviews[0].ReviewId);
 
         //Assert
         result.Should().BeEquivalentTo(_reviews[0]);
@@ -191,7 +191,7 @@ public class ReviewRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         //Act
-        var result = await _reviewRepository.GetById(reviewId);
+        var result = await _reviewRepository.GetByIdAsync(reviewId);
 
         //Assert
         result.Should().BeNull();
@@ -213,7 +213,7 @@ public class ReviewRepositoryTests : IDisposable
         };
 
         //Act
-        var createResult = await _reviewRepository.Create(review);
+        var createResult = await _reviewRepository.CreateAsync(review);
         var saveChangesResult = await _reviewRepository.SaveChangesAsync();
 
         //Assert
@@ -221,52 +221,6 @@ public class ReviewRepositoryTests : IDisposable
         saveChangesResult.Should().Be(1);
     }
 
-    [Fact]
-    public async Task UpdateReview_WithValidData_ShouldUpdateReview()
-    {
-        //Arrange
-        await _context.Reviews.AddRangeAsync(_reviews);
-        await _context.SaveChangesAsync();
-        var review = await _reviewRepository.GetById(_reviews[0].ReviewId);
-        if (review == null)
-        {
-            Assert.Fail();
-        }
-        //Act
-        review.Comment = "Mediocre experience overall.";
-        var updateResult = await _reviewRepository.UpdateAsync(review);
-        var saveChangesResult = await _reviewRepository.SaveChangesAsync();
-
-        //Assert
-        updateResult.Should().BeEquivalentTo(updateResult);
-        saveChangesResult.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task UpdateReview_WithInvalidData_ShouldReturnNotFound()
-    {
-        //Arrange
-        var review = new Review
-        {
-            ReviewId = -1,
-            UserId = 3,
-            HotelId = 2,
-            Comment = "Mediocre experience overall.",
-            Rate = 2.9f,
-            ImagePath = "images/reviews/review4.jpg",
-            CreatedAt = new DateTime(2025, 3, 5),
-            UpdatedAt = new DateTime(2025, 3, 5)
-        };
-
-        //Act
-        var updateResult = await _reviewRepository.UpdateAsync(review);
-        var saveChangesResult = await _reviewRepository.SaveChangesAsync();
-
-        //Assert
-        updateResult.Should().BeNull();
-        saveChangesResult.Should().Be(0);
-
-    }
 
     [Fact]
     public async Task DeleteReview_WithValidData_ShouldDeleteReview()
@@ -274,16 +228,16 @@ public class ReviewRepositoryTests : IDisposable
         //Arrange
         await _context.Reviews.AddRangeAsync(_reviews);
         await _context.SaveChangesAsync();
-        var review = await _reviewRepository.GetById(_reviews[0].ReviewId);
+        var review = await _reviewRepository.GetByIdAsync(_reviews[0].ReviewId);
         if (review == null)
         {
             Assert.Fail();
         }
 
         //Act
-        var deleteResult = await _reviewRepository.Delete(review.ReviewId);
+        var deleteResult = await _reviewRepository.DeleteAsync(review.ReviewId);
         var saveChangesResult = await _reviewRepository.SaveChangesAsync();
-        var getResult = await _reviewRepository.GetById(review.ReviewId);
+        var getResult = await _reviewRepository.GetByIdAsync(review.ReviewId);
 
         //Assert
         deleteResult.Should().BeEquivalentTo(review);
@@ -297,7 +251,7 @@ public class ReviewRepositoryTests : IDisposable
         //Arrange
 
         //Act
-        var deleteResult = await _reviewRepository.Delete(-1);
+        var deleteResult = await _reviewRepository.DeleteAsync(-1);
         var saveChangesResult = await _reviewRepository.SaveChangesAsync();
 
         //Assert

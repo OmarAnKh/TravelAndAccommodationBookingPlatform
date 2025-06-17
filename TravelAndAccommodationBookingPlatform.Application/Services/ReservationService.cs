@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using TravelAndAccommodationBookingPlatform.Application.DTOs.Location;
 using TravelAndAccommodationBookingPlatform.Application.DTOs.Reservation;
 using TravelAndAccommodationBookingPlatform.Application.Interfaces;
@@ -23,16 +24,16 @@ public class ReservationService : IReservationService
         _mapper = mapper;
     }
 
-    public async Task<(IEnumerable<ReservationDto>, PaginationMetaData)> GetAll(ReservationQueryParameters queryParams)
+    public async Task<(IEnumerable<ReservationDto>, PaginationMetaData)> GetAllAsync(ReservationQueryParameters queryParams)
     {
-        var (entities, paginationMetaData) = await _reservationRepository.GetAll(queryParams);
+        var (entities, paginationMetaData) = await _reservationRepository.GetAllAsync(queryParams);
         var reservations = _mapper.Map<IEnumerable<ReservationDto>>(entities);
         return (reservations, paginationMetaData);
     }
-    public async Task<ReservationDto?> Create(ReservationCreationDto entity)
+    public async Task<ReservationDto?> CreateAsync(ReservationCreationDto entity)
     {
-        var user = await _userRepository.GetById(entity.UserId);
-        var room = await _roomRepository.GetById(entity.RoomId);
+        var user = await _userRepository.GetByIdAsync(entity.UserId);
+        var room = await _roomRepository.GetByIdAsync(entity.RoomId);
         var isDateValid = DateValidation(entity.StartDate, entity.EndDate);
         if (!isDateValid)
         {
@@ -47,7 +48,7 @@ public class ReservationService : IReservationService
             return null;
         }
         var reservation = _mapper.Map<Reservation>(entity);
-        var result = await _reservationRepository.Create(reservation);
+        var result = await _reservationRepository.CreateAsync(reservation);
         if (result is null)
         {
             return null;
@@ -55,21 +56,25 @@ public class ReservationService : IReservationService
         await _reservationRepository.SaveChangesAsync();
         return _mapper.Map<ReservationDto>(result);
     }
-    public async Task<ReservationDto?> UpdateAsync(ReservationUpdateDto entity)
+    public async Task<ReservationDto?> UpdateAsync(int userId, int roomId, JsonPatchDocument<ReservationUpdateDto> patchDocument)
     {
-        var reservation = _mapper.Map<Reservation>(entity);
-        var result = await _reservationRepository.UpdateAsync(reservation);
-        if (result is null)
+        var reservation = await _reservationRepository.GetByUserAndRoomIdAsync(userId, roomId);
+        if (reservation is null)
         {
             return null;
         }
+        var reservationUpdateDto = _mapper.Map<ReservationUpdateDto>(reservation);
+        patchDocument.ApplyTo(reservationUpdateDto);
+
+        _mapper.Map(reservationUpdateDto, reservation);
         await _reservationRepository.SaveChangesAsync();
-        return _mapper.Map<ReservationDto>(result);
+        return _mapper.Map<ReservationDto>(reservation);
     }
 
-    public async Task<ReservationDto?> GetByUserAndRoomId(int userId, int roomId)
+
+    public async Task<ReservationDto?> GetByUserAndRoomIdAsync(int userId, int roomId)
     {
-        var reservation = await _reservationRepository.GetByUserAndRoomId(userId, roomId);
+        var reservation = await _reservationRepository.GetByUserAndRoomIdAsync(userId, roomId);
         if (reservation is null)
         {
             return null;
@@ -77,9 +82,9 @@ public class ReservationService : IReservationService
         return _mapper.Map<ReservationDto>(reservation);
     }
 
-    public async Task<ReservationDto?> DeleteByUserAndRoomId(int userId, int roomId)
+    public async Task<ReservationDto?> DeleteByUserAndRoomIdAsync(int userId, int roomId)
     {
-        var reservation = await _reservationRepository.DeleteByUserAndRoomId(userId, roomId);
+        var reservation = await _reservationRepository.DeleteByUserAndRoomIdAsync(userId, roomId);
         if (reservation is null)
         {
             return null;

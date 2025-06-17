@@ -47,7 +47,7 @@ public class HotelRepositoryTests : IDisposable
         };
 
         // Act
-        var (entities, paginationMetaData) = await _hotelRepository.GetAll(queryParameters);
+        var (entities, paginationMetaData) = await _hotelRepository.GetAllAsync(queryParameters);
         var resultList = entities.ToList();
 
         int expectedCount = Math.Max(0, Math.Min(pageSize, resultList.Count));
@@ -74,7 +74,7 @@ public class HotelRepositoryTests : IDisposable
         };
 
         //Act
-        var (entities, paginationMetaData) = await _hotelRepository.GetAll(queryParameters);
+        var (entities, paginationMetaData) = await _hotelRepository.GetAllAsync(queryParameters);
         var resultList = entities.ToList();
 
         var expectedResult = _hotels.Where(hotel => hotel.Name.Contains(searchTerm)
@@ -91,7 +91,7 @@ public class HotelRepositoryTests : IDisposable
     {
         // Arrange
         // Act
-        var (result, paginationMetaData) = await _hotelRepository.GetAll(new HotelQueryParameters());
+        var (result, paginationMetaData) = await _hotelRepository.GetAllAsync(new HotelQueryParameters());
 
         // Assert
         paginationMetaData.CurrentPage.Should().Be(1);
@@ -106,7 +106,7 @@ public class HotelRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
         var cityId = _hotels[0].Id;
         // Act
-        var result = await _hotelRepository.GetById(cityId);
+        var result = await _hotelRepository.GetByIdAsync(cityId);
 
         // Assert
         result.Should().NotBeNull();
@@ -123,7 +123,7 @@ public class HotelRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _hotelRepository.GetById(hotelId);
+        var result = await _hotelRepository.GetByIdAsync(hotelId);
 
         // Assert
         result.Should().BeNull();
@@ -137,47 +137,13 @@ public class HotelRepositoryTests : IDisposable
         var hotel = new Hotel { Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg" };
 
         //Act
-        var result = await _hotelRepository.Create(hotel);
+        var result = await _hotelRepository.CreateAsync(hotel);
         await _hotelRepository.SaveChangesAsync();
 
         //Assert
         result.Should().BeEquivalentTo(hotel);
         _context.Hotels.Should().Contain(hotel);
 
-    }
-
-    [Fact]
-    public async Task Update_WithValidHotel_ShouldUpdateCityInContext()
-    {
-        //Arrange
-        await _context.Hotels.AddRangeAsync(_hotels);
-        await _context.SaveChangesAsync();
-        var hotel = await _hotelRepository.GetById(_hotels[0].Id);
-        hotel.Name = "Golden view";
-
-        //Act
-        var result = await _hotelRepository.UpdateAsync(hotel);
-        await _hotelRepository.SaveChangesAsync();
-
-        //Assert
-        result.Should().BeEquivalentTo(hotel);
-
-    }
-
-
-    [Fact]
-    public async Task Update_WithInvalidHotel_ShouldUpdateCityInContext()
-    {
-        //Arrange
-        var hotel = new Hotel { Id = -1, Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg" };
-
-        //Act
-        var updateResult = await _hotelRepository.UpdateAsync(hotel);
-        var saveChangesResult = await _hotelRepository.SaveChangesAsync();
-
-        //Assert
-        updateResult.Should().BeNull();
-        saveChangesResult.Should().Be(0);
     }
 
 
@@ -187,12 +153,12 @@ public class HotelRepositoryTests : IDisposable
         //Arrange
         await _context.Hotels.AddRangeAsync(_hotels);
         await _context.SaveChangesAsync();
-        var hotel = await _hotelRepository.GetById(_hotels[0].Id);
+        var hotel = await _hotelRepository.GetByIdAsync(_hotels[0].Id);
 
         //Act
-        var result = await _hotelRepository.Delete(hotel.Id);
+        var result = await _hotelRepository.DeleteAsync(hotel.Id);
         var saveChangesResult = await _hotelRepository.SaveChangesAsync();
-        var getResult = await _hotelRepository.GetById(hotel.Id);
+        var getResult = await _hotelRepository.GetByIdAsync(hotel.Id);
 
         //Assert
         result.Should().NotBeNull();
@@ -208,7 +174,7 @@ public class HotelRepositoryTests : IDisposable
         var hotel = new Hotel { Id = -1, Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg" };
 
         //Act
-        var deleteResult = await _hotelRepository.Delete(hotel.Id);
+        var deleteResult = await _hotelRepository.DeleteAsync(hotel.Id);
         var saveChangesResult = await _hotelRepository.SaveChangesAsync();
 
         //Assert

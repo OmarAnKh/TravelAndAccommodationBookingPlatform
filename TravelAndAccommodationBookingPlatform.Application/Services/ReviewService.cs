@@ -1,4 +1,6 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using TravelAndAccommodationBookingPlatform.Application.DTOs.Review;
 using TravelAndAccommodationBookingPlatform.Application.Interfaces;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
@@ -13,26 +15,30 @@ public class ReviewService : IReviewService
     private readonly IReviewRepository _reviewRepository;
     private readonly IUserRepository _userRepository;
     private readonly IHotelRepository _hotelRepository;
+    private readonly IImageUploader _imageUploader;
     private readonly IMapper _mapper;
 
-    public ReviewService(IReviewRepository reviewRepository, IUserRepository userRepository, IHotelRepository hotelRepository, IMapper mapper)
+
+    public ReviewService(IReviewRepository reviewRepository, IUserRepository userRepository, IHotelRepository hotelRepository, IImageUploader imageUploader, IMapper mapper)
     {
         _reviewRepository = reviewRepository;
         _userRepository = userRepository;
         _hotelRepository = hotelRepository;
+        _imageUploader = imageUploader;
         _mapper = mapper;
     }
 
-    public async Task<(IEnumerable<ReviewDto>, PaginationMetaData)> GetAll(ReviewQueryParameters queryParams)
+    public async Task<(IEnumerable<ReviewDto>, PaginationMetaData)> GetAllAsync(ReviewQueryParameters queryParams)
     {
-        var (entities, paginationMetaData) = await _reviewRepository.GetAll(queryParams);
+        var (entities, paginationMetaData) = await _reviewRepository.GetAllAsync(queryParams);
         var reviews = _mapper.Map<IEnumerable<ReviewDto>>(entities);
         return (reviews, paginationMetaData);
     }
-    public async Task<ReviewDto?> Create(ReviewCreationDto entity)
+
+    public async Task<ReviewDto?> CreateAsync(ReviewCreationDto entity, IFormFile file)
     {
-        var user = await _userRepository.GetById(entity.UserId);
-        var hotel = await _hotelRepository.GetById(entity.HotelId);
+        var user = await _userRepository.GetByIdAsync(entity.UserId);
+        var hotel = await _hotelRepository.GetByIdAsync(entity.HotelId);
         if (hotel is null || user is null)
             return null;
 
@@ -40,38 +46,43 @@ public class ReviewService : IReviewService
         review.CreatedAt = DateTime.UtcNow;
         review.UpdatedAt = DateTime.UtcNow;
 
-        var result = await _reviewRepository.Create(review);
+        var result = await _reviewRepository.CreateAsync(review);
         if (result is null)
             return null;
 
         await _reviewRepository.SaveChangesAsync();
         return _mapper.Map<ReviewDto>(result);
     }
-
-    public async Task<ReviewDto?> UpdateAsync(ReviewUpdateDto entity)
+    public async Task<ReviewDto?> UpdateAsync(int id, JsonPatchDocument<ReviewUpdateDto> patchDocument)
     {
-        var review = _mapper.Map<Review>(entity);
-        review.UpdatedAt = DateTime.UtcNow;
-        var result = await _reviewRepository.UpdateAsync(review);
-        if (result is null)
+        var review = await _reviewRepository.GetByIdAsync(id);
+        if (review is null)
         {
             return null;
         }
+        var updatedReview = _mapper.Map<ReviewUpdateDto>(review);
+        patchDocument.ApplyTo(updatedReview);
+
+        _mapper.Map(updatedReview, review);
+        review.UpdatedAt = DateTime.UtcNow;
+
+
         await _reviewRepository.SaveChangesAsync();
-        return _mapper.Map<ReviewDto>(result);
+        return _mapper.Map<ReviewDto>(review);
     }
-    public async Task<ReviewDto?> GetById(int id)
+
+    public async Task<ReviewDto?> GetByIdAsync(int id)
     {
-        var review = await _reviewRepository.GetById(id);
+        var review = await _reviewRepository.GetByIdAsync(id);
         if (review is null)
         {
             return null;
         }
         return _mapper.Map<ReviewDto>(review);
     }
-    public async Task<ReviewDto?> Delete(int id)
+    public async Task<ReviewDto?> DeleteAsync(int id)
     {
-        var review = await _reviewRepository.Delete(id);
+        var review = await _reviewRepository.DeleteAsync(id);
         if (review is null)
         {
             return null;

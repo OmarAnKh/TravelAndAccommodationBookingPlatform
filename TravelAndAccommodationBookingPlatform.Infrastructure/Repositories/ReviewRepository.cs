@@ -15,7 +15,7 @@ public class ReviewRepository : IReviewRepository
     {
         _context = context;
     }
-    public async Task<(IEnumerable<Review>, PaginationMetaData)> GetAll(ReviewQueryParameters queryParams)
+    public async Task<(IEnumerable<Review>, PaginationMetaData)> GetAllAsync(ReviewQueryParameters queryParams)
     {
         var query = _context.Reviews as IQueryable<Review>;
         if (queryParams.UserId != null)
@@ -36,30 +36,21 @@ public class ReviewRepository : IReviewRepository
         var pagedList = await query.Skip(queryParams.PageSize * (queryParams.Page - 1)).Take(queryParams.PageSize).ToListAsync();
         return (pagedList, paginationMetaData);
     }
-    public async Task<Review?> Create(Review entity)
+    public async Task<Review?> CreateAsync(Review entity)
     {
         var review = await _context.Reviews.AddAsync(entity);
         return review.Entity;
     }
-    public async Task<Review?> UpdateAsync(Review entity)
-    {
-        var entry = await _context.Reviews.FirstOrDefaultAsync(r => r.ReviewId == entity.ReviewId);
-        if (entry == null)
-        {
-            return null;
-        }
-        _context.Entry(entry).CurrentValues.SetValues(entity);
-        return entry;
-    }
+
     public async Task<int> SaveChangesAsync()
     {
         return await _context.SaveChangesAsync();
     }
-    public async Task<Review?> GetById(int id)
+    public async Task<Review?> GetByIdAsync(int id)
     {
         return await _context.Reviews.FirstOrDefaultAsync(r => r.ReviewId == id);
     }
-    public async Task<Review?> Delete(int id)
+    public async Task<Review?> DeleteAsync(int id)
     {
         var review = await _context.Reviews.FirstOrDefaultAsync(r => r.ReviewId == id);
         if (review == null)

@@ -15,7 +15,7 @@ public class RoomRepository : IRoomRepository
     {
         _context = context;
     }
-    public async Task<(IEnumerable<Room>, PaginationMetaData)> GetAll(RoomQueryParameters queryParams)
+    public async Task<(IEnumerable<Room>, PaginationMetaData)> GetAllAsync(RoomQueryParameters queryParams)
     {
         var query = _context.Rooms
             .AsQueryable();
@@ -59,32 +59,22 @@ public class RoomRepository : IRoomRepository
         return (rooms, pagination);
     }
 
-    public async Task<Room?> Create(Room entity)
+    public async Task<Room?> CreateAsync(Room entity)
     {
         var result = await _context.Rooms.AddAsync(entity);
         return result.Entity;
     }
 
-    public async Task<Room?> UpdateAsync(Room entity)
-    {
-        var room = await _context.Rooms.FirstOrDefaultAsync(r => r.Id == entity.Id);
-        if (room == null)
-        {
-            return null;
-        }
-        _context.Entry(room).CurrentValues.SetValues(entity);
-        return room;
-    }
 
     public async Task<int> SaveChangesAsync()
     {
         return await _context.SaveChangesAsync();
     }
-    public async Task<Room?> GetById(int id)
+    public async Task<Room?> GetByIdAsync(int id)
     {
         return await _context.Rooms.FirstOrDefaultAsync(r => r.Id == id);
     }
-    public async Task<Room?> Delete(int id)
+    public async Task<Room?> DeleteAsync(int id)
     {
         var room = await _context.Rooms.FirstOrDefaultAsync(r => r.Id == id);
         if (room == null)

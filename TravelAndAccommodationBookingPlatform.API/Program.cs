@@ -1,9 +1,120 @@
+using Amazon;
+using Amazon.Runtime;
+using Amazon.S3;
+using AutoMapper;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using TravelAndAccommodationBookingPlatform.Application.Interfaces;
+using TravelAndAccommodationBookingPlatform.Application.Services;
+using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
+using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
+using TravelAndAccommodationBookingPlatform.Infrastructure.Repositories;
+using TravelAndAccommodationBookingPlatform.Infrastructure.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
+// Load environment variables
+DotNetEnv.Env.Load();
+
 // Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddSwaggerGen();
+
+// AWS Configuration - Remove hardcoded credentials
+string awsAccessKey = Environment.GetEnvironmentVariable("AWSACCESSKEYID")
+                      ?? throw new InvalidOperationException("Missing environment variable: AWSACCESSKEYID");
+
+string awsSecretKey = Environment.GetEnvironmentVariable("AWSSECRETACCESSKEY")
+                      ?? throw new InvalidOperationException("Missing environment variable: AWSSECRETACCESSKEY");
+
+string awsRegion = Environment.GetEnvironmentVariable("AWSREGION")
+                   ?? throw new InvalidOperationException("Missing environment variable: AWSREGION");
+
+string bucketName = Environment.GetEnvironmentVariable("BUCKETNAME")
+                    ?? throw new InvalidOperationException("Missing environment variable: BUCKETNAME");
+
+string issuer = Environment.GetEnvironmentVariable("ISSUER")
+                ?? throw new InvalidOperationException("Missing environment variable: ISSUER");
+
+string audience = Environment.GetEnvironmentVariable("AUDIENCE")
+                  ?? throw new InvalidOperationException("Missing environment variable: AUDIENCE");
+
+string secretKey = Environment.GetEnvironmentVariable("SECRETKEY")
+                   ?? throw new InvalidOperationException("Missing environment variable: SECRETKEY");
+var credentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
+var region = RegionEndpoint.GetBySystemName(awsRegion);
+
+
+builder.Services.AddSingleton<IAmazonS3>(_ =>
+    new AmazonS3Client(credentials, region)
+);
+
+builder.Services.AddScoped<IImageUploader>(sp =>
+{
+    var s3Client = sp.GetRequiredService<IAmazonS3>();
+    return new S3ImageUploader(s3Client, bucketName);
+});
+
+builder.Services.AddScoped<IHotelService, HotelService>();
+builder.Services.AddScoped<IHotelRepository, HotelRepository>();
+builder.Services.AddScoped<ICityRepository, CityRepository>();
+builder.Services.AddScoped<IAppDbContext, SqlServerDbContext>();
+builder.Services.AddDbContext<SqlServerDbContext>();
+
+builder.Services.AddAuthentication("Bearer").AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new()
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateIssuerSigningKey = true,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero,
+        ValidIssuer = issuer,
+        ValidAudience = audience,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Convert.FromBase64String(secretKey)),
+    };
+});
+builder.Services.AddSwaggerGen(c =>
+{
+
+    // Add JWT Authentication scheme
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter 'Bearer' [space] and then your token in the text input below.\nExample: \"Bearer abc123xyz\""
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
+        }
+    });
+});
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(setupAction =>
+{
+    var xmlCommentsFile = "TravelAndAccommodationBookingPlatform.xml";
+    var xmlCommentsFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
+    setupAction.IncludeXmlComments(xmlCommentsFullPath);
+});
+
 
 var app = builder.Build();
 
@@ -15,30 +126,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast")
-    .WithOpenApi();
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

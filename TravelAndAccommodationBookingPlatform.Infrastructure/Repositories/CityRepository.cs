@@ -15,7 +15,7 @@ public class CityRepository : ICityRepository
     {
         _context = context;
     }
-    public async Task<(IEnumerable<City>, PaginationMetaData)> GetAll(CityQueryParameters queryParams)
+    public async Task<(IEnumerable<City>, PaginationMetaData)> GetAllAsync(CityQueryParameters queryParams)
     {
         var query = _context.Cities.AsQueryable();
 
@@ -35,29 +35,18 @@ public class CityRepository : ICityRepository
 
         return (collectionToReturn, paginationMetaData);
     }
-    public async Task<City?> GetById(int id)
+    public async Task<City?> GetByIdAsync(int id)
     {
         var city = await _context.Cities.FirstOrDefaultAsync(c => c.Id == id);
         return city;
     }
-    public async Task<City?> Create(City entity)
+    public async Task<City?> CreateAsync(City entity)
     {
         var result = await _context.Cities.AddAsync(entity);
         return result.Entity;
     }
-    public async Task<City?> UpdateAsync(City entity)
-    {
 
-        var city = await _context.Cities.FirstOrDefaultAsync(c => c.Id == entity.Id);
-        if (city == null)
-        {
-            return null;
-        }
-
-        _context.Entry(city).CurrentValues.SetValues(entity);
-        return city;
-    }
-    public async Task<City?> Delete(int id)
+    public async Task<City?> DeleteAsync(int id)
     {
         var city = await _context.Cities.FirstOrDefaultAsync(c => c.Id == id);
         if (city == null)

@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using TravelAndAccommodationBookingPlatform.Application.DTOs.Location;
 using TravelAndAccommodationBookingPlatform.Application.Interfaces;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
@@ -20,22 +21,38 @@ public class LocationService : ILocationService
         _hotelRepository = hotelRepository;
         _mapper = mapper;
     }
-    public async Task<(IEnumerable<LocationDto>, PaginationMetaData)> GetAll(LocationQueryParameters queryParams)
+    public async Task<(IEnumerable<LocationDto>, PaginationMetaData)> GetAllAsync(LocationQueryParameters queryParams)
     {
-        var (entities, metaData) = await _locationRepository.GetAll(queryParams);
+        var (entities, metaData) = await _locationRepository.GetAllAsync(queryParams);
         var locations = _mapper.Map<IEnumerable<LocationDto>>(entities);
         return (locations, metaData);
     }
+    public async Task<LocationDto?> UpdateAsync(int id, JsonPatchDocument<LocationUpdateDto> patchDocument)
+    {
+        var location = await _locationRepository.GetByIdAsync(id);
+        if (location is null)
+        {
+            return null;
+        }
+        var locationToPatch = _mapper.Map<LocationUpdateDto>(location);
 
-    public async Task<LocationDto?> Create(LocationCreationDto entity)
+        patchDocument.ApplyTo(locationToPatch);
+
+        _mapper.Map(locationToPatch, location);
+
+        await _locationRepository.SaveChangesAsync();
+        return _mapper.Map<LocationDto>(location);
+    }
+
+    public async Task<LocationDto?> CreateAsync(LocationCreationDto entity)
     {
         var location = _mapper.Map<Location>(entity);
-        var hotel = await _hotelRepository.GetById(location.HotelId);
+        var hotel = await _hotelRepository.GetByIdAsync(location.HotelId);
         if (hotel is null)
         {
             return null;
         }
-        var creationResult = await _locationRepository.Create(location);
+        var creationResult = await _locationRepository.CreateAsync(location);
         if (creationResult is null)
         {
             return null;
@@ -44,20 +61,10 @@ public class LocationService : ILocationService
         return _mapper.Map<LocationDto>(creationResult);
 
     }
-    public async Task<LocationDto?> UpdateAsync(LocationUpdateDto entity)
+
+    public async Task<LocationDto?> GetByIdAsync(int id)
     {
-        var location = _mapper.Map<Location>(entity);
-        var updateResult = await _locationRepository.UpdateAsync(location);
-        if (updateResult is null)
-        {
-            return null;
-        }
-        await _locationRepository.SaveChangesAsync();
-        return _mapper.Map<LocationDto>(updateResult);
-    }
-    public async Task<LocationDto?> GetById(int id)
-    {
-        var location = await _locationRepository.GetById(id);
+        var location = await _locationRepository.GetByIdAsync(id);
         if (location is null)
         {
             return null;
@@ -65,9 +72,9 @@ public class LocationService : ILocationService
         return _mapper.Map<LocationDto>(location);
     }
 
-    public async Task<LocationDto?> Delete(int id)
+    public async Task<LocationDto?> DeleteAsync(int id)
     {
-        var deleteResult = await _locationRepository.Delete(id);
+        var deleteResult = await _locationRepository.DeleteAsync(id);
         if (deleteResult is null)
         {
             return null;

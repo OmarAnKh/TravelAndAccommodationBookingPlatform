@@ -1,4 +1,6 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using TravelAndAccommodationBookingPlatform.Application.DTOs.City;
 using TravelAndAccommodationBookingPlatform.Application.Interfaces;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
@@ -11,29 +13,31 @@ namespace TravelAndAccommodationBookingPlatform.Application.Services;
 public class CityService : ICityService
 {
     private readonly ICityRepository _cityRepository;
+    private readonly IImageUploader _imageUploader;
     private readonly IMapper _mapper;
 
-    public CityService(ICityRepository cityService, IMapper mapper)
+    public CityService(ICityRepository cityService, IMapper mapper, IImageUploader imageUploader)
     {
         _cityRepository = cityService;
         _mapper = mapper;
+        _imageUploader = imageUploader;
     }
 
 
-    public async Task<(IEnumerable<CityDto>, PaginationMetaData)> GetAll(CityQueryParameters queryParams)
+    public async Task<(IEnumerable<CityDto>, PaginationMetaData)> GetAllAsync(CityQueryParameters queryParams)
     {
-        var (cities, paginationMetaData) = await _cityRepository.GetAll(queryParams);
+        var (cities, paginationMetaData) = await _cityRepository.GetAllAsync(queryParams);
         var citiesDto = _mapper.Map<IEnumerable<CityDto>>(cities);
         return (citiesDto, paginationMetaData);
     }
 
 
-    public async Task<CityDto?> Create(CityCreationDto entity)
+    public async Task<CityDto?> CreateAsync(CityCreationDto entity, IFormFile file)
     {
         var city = _mapper.Map<City>(entity);
         city.CreatedAt = DateTime.UtcNow;
         city.UpdatedAt = DateTime.UtcNow;
-        var creationResult = await _cityRepository.Create(city);
+        var creationResult = await _cityRepository.CreateAsync(city);
         if (creationResult == null)
         {
             return null;
@@ -43,23 +47,30 @@ public class CityService : ICityService
     }
 
 
-    public async Task<CityDto?> UpdateAsync(CityUpdateDto entity)
+    public async Task<CityDto?> UpdateAsync(int id, JsonPatchDocument<CityUpdateDto> patchDocument)
     {
-        var city = _mapper.Map<City>(entity);
-        city.UpdatedAt = DateTime.UtcNow;
-        var updateResult = await _cityRepository.UpdateAsync(city);
-        if (updateResult == null)
+        var city = await _cityRepository.GetByIdAsync(id);
+
+        if (city == null)
         {
             return null;
         }
+
+        var cityToPatch = _mapper.Map<CityUpdateDto>(city);
+        patchDocument.ApplyTo(cityToPatch);
+
+        _mapper.Map(city, cityToPatch);
+        city.UpdatedAt = DateTime.UtcNow;
+
         await _cityRepository.SaveChangesAsync();
-        return _mapper.Map<CityDto>(updateResult);
+
+        return _mapper.Map<CityDto>(city);
     }
 
 
-    public async Task<CityDto?> GetById(int id)
+    public async Task<CityDto?> GetByIdAsync(int id)
     {
-        var city = await _cityRepository.GetById(id);
+        var city = await _cityRepository.GetByIdAsync(id);
         if (city == null)
         {
             return null;
@@ -68,9 +79,9 @@ public class CityService : ICityService
     }
 
 
-    public async Task<CityDto?> Delete(int id)
+    public async Task<CityDto?> DeleteAsync(int id)
     {
-        var deleteResult = await _cityRepository.Delete(id);
+        var deleteResult = await _cityRepository.DeleteAsync(id);
         if (deleteResult == null)
         {
             return null;

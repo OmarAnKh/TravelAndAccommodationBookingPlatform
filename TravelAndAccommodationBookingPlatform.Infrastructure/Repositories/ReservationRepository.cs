@@ -15,7 +15,7 @@ public class ReservationRepository : IReservationRepository
     {
         _context = context;
     }
-    public async Task<(IEnumerable<Reservation>, PaginationMetaData)> GetAll(ReservationQueryParameters queryParams)
+    public async Task<(IEnumerable<Reservation>, PaginationMetaData)> GetAllAsync(ReservationQueryParameters queryParams)
     {
         var query = _context.Reservations.AsQueryable();
 
@@ -50,31 +50,21 @@ public class ReservationRepository : IReservationRepository
         return (collectionToReturn, paginationMetaData);
     }
 
-    public async Task<Reservation?> GetByUserAndRoomId(int userId, int roomId)
+    public async Task<Reservation?> GetByUserAndRoomIdAsync(int userId, int roomId)
     {
         var reservation = await _context.Reservations.FirstOrDefaultAsync(r => r.UserId == userId && r.RoomId == roomId);
         return reservation;
     }
 
 
-    public async Task<Reservation?> Create(Reservation entity)
+    public async Task<Reservation?> CreateAsync(Reservation entity)
     {
         var result = await _context.Reservations.AddAsync(entity);
         return result.Entity;
     }
 
 
-    public async Task<Reservation?> UpdateAsync(Reservation entity)
-    {
-        var reservation = await _context.Reservations.FirstOrDefaultAsync(r => r.UserId == entity.UserId && r.RoomId == entity.RoomId);
-        if (reservation == null)
-        {
-            return null;
-        }
-        _context.Entry(reservation).CurrentValues.SetValues(entity);
-        return reservation;
-    }
-    public async Task<Reservation?> DeleteByUserAndRoomId(int userId, int roomId)
+    public async Task<Reservation?> DeleteByUserAndRoomIdAsync(int userId, int roomId)
     {
         var reservation = await _context.Reservations.FirstOrDefaultAsync(r => r.UserId == userId && r.RoomId == roomId);
         if (reservation == null)

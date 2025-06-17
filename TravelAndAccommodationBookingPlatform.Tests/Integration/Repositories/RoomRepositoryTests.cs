@@ -49,7 +49,7 @@ public class RoomRepositoryTests : IDisposable
         };
 
         //Act
-        var (entities, paginationMetaData) = await _roomRepository.GetAll(queryParameters);
+        var (entities, paginationMetaData) = await _roomRepository.GetAllAsync(queryParameters);
         var result = entities.ToList();
 
         int expectedCount = Math.Max(0, Math.Min(result.Count, pageSize));
@@ -88,7 +88,7 @@ public class RoomRepositoryTests : IDisposable
         };
 
         // Act
-        var (entities, paginationMetaData) = await _roomRepository.GetAll(queryParams);
+        var (entities, paginationMetaData) = await _roomRepository.GetAllAsync(queryParams);
         var resultList = entities.ToList();
 
         // Expected query
@@ -124,7 +124,7 @@ public class RoomRepositoryTests : IDisposable
         //Arrange
 
         //Act
-        var (entities, paginationMetaData) = await _roomRepository.GetAll(new RoomQueryParameters());
+        var (entities, paginationMetaData) = await _roomRepository.GetAllAsync(new RoomQueryParameters());
 
         //Assert
         paginationMetaData.CurrentPage.Should().Be(1);
@@ -139,7 +139,7 @@ public class RoomRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         //Act
-        var result = await _roomRepository.GetById(_rooms[0].Id);
+        var result = await _roomRepository.GetByIdAsync(_rooms[0].Id);
 
         //Assert
         result.Should().BeEquivalentTo(_rooms[0]);
@@ -155,7 +155,7 @@ public class RoomRepositoryTests : IDisposable
         //Arrange
 
         //Act 
-        var result = await _roomRepository.GetById(roomId);
+        var result = await _roomRepository.GetByIdAsync(roomId);
 
         //Assert
         result.Should().BeNull();
@@ -168,7 +168,7 @@ public class RoomRepositoryTests : IDisposable
         var room = new Room { HotelId = 2, RoomType = RoomType.Deluxe, Price = 200, Availability = Availability.Unavailable };
 
         //Act
-        var createResult = await _roomRepository.Create(room);
+        var createResult = await _roomRepository.CreateAsync(room);
         var saveChangesResult = await _context.SaveChangesAsync();
 
         //Assert
@@ -177,43 +177,6 @@ public class RoomRepositoryTests : IDisposable
 
     }
 
-    [Fact]
-    public async Task UpdateRoom_WithValidParameters_ShouldUpdateRoom()
-    {
-        //Arrange
-        await _context.Rooms.AddRangeAsync(_rooms);
-        await _context.SaveChangesAsync();
-
-        var room = await _roomRepository.GetById(_rooms[0].Id);
-        if (room == null)
-        {
-            Assert.Fail();
-        }
-
-        //Act
-        room.RoomType = RoomType.Deluxe;
-        var updateResult = await _roomRepository.UpdateAsync(room);
-        var saveChangesResult = await _context.SaveChangesAsync();
-
-        //Assert
-        updateResult.Should().BeEquivalentTo(room);
-        saveChangesResult.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task UpdateRoom_WithInvalidParameters_ShouldReturnNotFound()
-    {
-        //Arrange
-        var room = new Room { Id = -1, HotelId = 2, RoomType = RoomType.Deluxe, Price = 200, Availability = Availability.Unavailable };
-
-        //Act
-        var updateResult = await _roomRepository.UpdateAsync(room);
-        var saveChangesResult = await _context.SaveChangesAsync();
-
-        //Assert
-        updateResult.Should().BeNull();
-        saveChangesResult.Should().Be(0);
-    }
 
     [Fact]
     public async Task DeleteRoom_WithValidParameters_ShouldDeleteRoom()
@@ -221,16 +184,16 @@ public class RoomRepositoryTests : IDisposable
         //Arrange
         await _context.Rooms.AddRangeAsync(_rooms);
         await _context.SaveChangesAsync();
-        var room = await _roomRepository.GetById(_rooms[0].Id);
+        var room = await _roomRepository.GetByIdAsync(_rooms[0].Id);
         if (room == null)
         {
             Assert.Fail();
         }
 
         //Act
-        var deleteResult = await _roomRepository.Delete(room.Id);
+        var deleteResult = await _roomRepository.DeleteAsync(room.Id);
         var saveChangesResult = await _context.SaveChangesAsync();
-        var getRoom = await _roomRepository.GetById(room.Id);
+        var getRoom = await _roomRepository.GetByIdAsync(room.Id);
 
         //Assert
         deleteResult.Should().BeEquivalentTo(room);
@@ -244,7 +207,7 @@ public class RoomRepositoryTests : IDisposable
         //Arrange
 
         //Act
-        var deleteResult = await _roomRepository.Delete(-1);
+        var deleteResult = await _roomRepository.DeleteAsync(-1);
         var saveChangesResult = await _context.SaveChangesAsync();
 
         //Assert

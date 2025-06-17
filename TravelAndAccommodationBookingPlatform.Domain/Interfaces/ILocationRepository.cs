@@ -5,6 +5,6 @@ namespace TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 
 public interface ILocationRepository : IRepository<Location, LocationQueryParameters>
 {
-    Task<Location?> GetById(int id);
-    Task<Location?> Delete(int id);
+    Task<Location?> GetByIdAsync(int id);
+    Task<Location?> DeleteAsync(int id);
 }

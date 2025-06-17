@@ -16,7 +16,7 @@ public class UserRepository : IUserRepository
     {
         _context = context;
     }
-    public async Task<(IEnumerable<User>, PaginationMetaData)> GetAll(UserQueryParameters queryParams)
+    public async Task<(IEnumerable<User>, PaginationMetaData)> GetAllAsync(UserQueryParameters queryParams)
     {
         var query = ApplyUserFilters(_context.Users.AsQueryable(), queryParams);
 
@@ -32,21 +32,10 @@ public class UserRepository : IUserRepository
         return (users, pagination);
     }
 
-    public async Task<User?> Create(User entity)
+    public async Task<User?> CreateAsync(User entity)
     {
         var result = await _context.Users.AddAsync(entity);
         return result.Entity;
-    }
-    public async Task<User?> UpdateAsync(User entity)
-    {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == entity.Id);
-        if (user == null)
-        {
-            return null;
-
-        }
-        _context.Entry(user).CurrentValues.SetValues(entity);
-        return user;
     }
 
 
@@ -54,11 +43,11 @@ public class UserRepository : IUserRepository
     {
         return await _context.SaveChangesAsync();
     }
-    public async Task<User?> GetById(int id)
+    public async Task<User?> GetByIdAsync(int id)
     {
         return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
     }
-    public async Task<User?> Delete(int id)
+    public async Task<User?> DeleteAsync(int id)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (user == null)
@@ -68,12 +57,12 @@ public class UserRepository : IUserRepository
         _context.Users.Remove(user);
         return user;
     }
-    public async Task<User?> GetByEmail(string email)
+    public async Task<User?> GetByEmailAsync(string email)
     {
         return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 
     }
-    public async Task<User?> GetByUsername(string username)
+    public async Task<User?> GetByUsernameAsync(string username)
     {
         return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
     }

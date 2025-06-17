@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
+using TravelAndAccommodationBookingPlatform.Application.DTOs.Hotel;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
@@ -14,7 +16,7 @@ public class HotelRepository : IHotelRepository
     {
         _context = context;
     }
-    public async Task<(IEnumerable<Hotel>, PaginationMetaData)> GetAll(HotelQueryParameters queryParams)
+    public async Task<(IEnumerable<Hotel>, PaginationMetaData)> GetAllAsync(HotelQueryParameters queryParams)
     {
         var query = _context.Hotels.AsQueryable();
 
@@ -23,7 +25,9 @@ public class HotelRepository : IHotelRepository
             query = query.Where(hotel => hotel.Name.Contains(queryParams.SearchTerm) ||
                                          hotel.Description.Contains(queryParams.SearchTerm));
         }
-
+        query = queryParams.SortDescending
+            ? query.OrderByDescending(hotel => hotel.Name)
+            : query;
         var totalCount = await query.CountAsync();
         var paginationMetaData = new PaginationMetaData(totalCount, queryParams.Page, queryParams.PageSize);
 
@@ -34,29 +38,18 @@ public class HotelRepository : IHotelRepository
 
         return (collectionToReturn, paginationMetaData);
     }
-    public async Task<Hotel?> GetById(int id)
+    public async Task<Hotel?> GetByIdAsync(int id)
     {
         var hotel = await _context.Hotels.FirstOrDefaultAsync(h => h.Id == id);
         return hotel;
     }
-    public async Task<Hotel?> Create(Hotel entity)
+    public async Task<Hotel?> CreateAsync(Hotel entity)
     {
         var result = await _context.Hotels.AddAsync(entity);
         return result.Entity;
     }
-    public async Task<Hotel?> UpdateAsync(Hotel entity)
-    {
 
-        var hotel = await _context.Hotels.FirstOrDefaultAsync(c => c.Id == entity.Id);
-        if (hotel == null)
-        {
-            return null;
-        }
-        _context.Entry(hotel).CurrentValues.SetValues(entity);
-        return hotel;
-    }
-
-    public async Task<Hotel?> Delete(int id)
+    public async Task<Hotel?> DeleteAsync(int id)
     {
         var hotel = await _context.Hotels.FirstOrDefaultAsync(h => h.Id == id);
         if (hotel == null)

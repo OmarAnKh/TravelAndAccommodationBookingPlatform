@@ -98,7 +98,7 @@ public class ReservationRepositoryTests : IDisposable
         };
 
         //Act
-        var (entities, paginationMetaData) = await _reservationRepository.GetAll(queryParameter);
+        var (entities, paginationMetaData) = await _reservationRepository.GetAllAsync(queryParameter);
         var resultList = entities.ToList();
 
         int expectedCount = Math.Max(0, Math.Min(resultList.Count, pageSize));
@@ -137,7 +137,7 @@ public class ReservationRepositoryTests : IDisposable
         };
 
         // Act
-        var (entities, paginationMetaData) = await _reservationRepository.GetAll(queryParams);
+        var (entities, paginationMetaData) = await _reservationRepository.GetAllAsync(queryParams);
         var resultList = entities.ToList();
 
         var expectedResult = _reservations.AsQueryable();
@@ -171,7 +171,7 @@ public class ReservationRepositoryTests : IDisposable
         //Arrange
 
         //Act
-        var (entities, paginationMetaData) = await _reservationRepository.GetAll(new ReservationQueryParameters());
+        var (entities, paginationMetaData) = await _reservationRepository.GetAllAsync(new ReservationQueryParameters());
 
         //Assert
         paginationMetaData.CurrentPage.Should().Be(1);
@@ -186,7 +186,7 @@ public class ReservationRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         //Act
-        var result = await _reservationRepository.GetByUserAndRoomId(_reservations[0].UserId, _reservations[0].RoomId);
+        var result = await _reservationRepository.GetByUserAndRoomIdAsync(_reservations[0].UserId, _reservations[0].RoomId);
 
         //Assert
         result.Should().BeEquivalentTo(_reservations[0]);
@@ -202,7 +202,7 @@ public class ReservationRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         //Act
-        var result = await _reservationRepository.GetByUserAndRoomId(userId, roomId);
+        var result = await _reservationRepository.GetByUserAndRoomIdAsync(userId, roomId);
 
         //Assert
         result.Should().BeNull();
@@ -225,7 +225,7 @@ public class ReservationRepositoryTests : IDisposable
         };
 
         //Act
-        var createResult = await _reservationRepository.Create(reservation);
+        var createResult = await _reservationRepository.CreateAsync(reservation);
         var saveChangesResult = await _context.SaveChangesAsync();
 
         //Assert
@@ -233,50 +233,6 @@ public class ReservationRepositoryTests : IDisposable
         saveChangesResult.Should().Be(1);
     }
 
-    [Fact]
-    public async Task UpdateReservation_WithValidData_ShouldUpdateReservation()
-    {
-        //Arrange
-        await _context.Reservations.AddRangeAsync(_reservations);
-        await _context.SaveChangesAsync();
-        var reservation = await _reservationRepository.GetByUserAndRoomId(_reservations[0].UserId, _reservations[0].RoomId);
-        if (reservation == null)
-        {
-            Assert.Fail();
-        }
-        reservation.BookDate = DateTime.UtcNow;
-        //Act
-        var updateResult = await _reservationRepository.UpdateAsync(reservation);
-        var saveChangesResult = await _context.SaveChangesAsync();
-
-        //Assert
-        updateResult.Should().BeEquivalentTo(reservation);
-        saveChangesResult.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task UpdateReservation_WithInvalidData_ShouldReturnNull()
-    {
-        //Arrange
-        var reservation = new Reservation
-        {
-            UserId = -1,
-            RoomId = -1,
-            StartDate = new DateTime(2025, 8, 10),
-            EndDate = new DateTime(2025, 8, 15),
-            BookPrice = 600.0f,
-            BookDate = DateTime.UtcNow,
-            PaymentStatus = PaymentStatus.Pending,
-            BookingStatus = BookingStatus.Pending
-        };
-        //Act
-        var updateResult = await _reservationRepository.UpdateAsync(reservation);
-        var saveChangesResult = await _context.SaveChangesAsync();
-
-        //Assert
-        updateResult.Should().BeNull();
-        saveChangesResult.Should().Be(0);
-    }
 
     [Fact]
     public async Task DeleteReservation_WithValidData_ShouldDeleteReservation()
@@ -284,15 +240,15 @@ public class ReservationRepositoryTests : IDisposable
         //Arrange
         await _context.Reservations.AddRangeAsync(_reservations);
         await _context.SaveChangesAsync();
-        var reservation = await _reservationRepository.GetByUserAndRoomId(_reservations[0].UserId, _reservations[0].RoomId);
+        var reservation = await _reservationRepository.GetByUserAndRoomIdAsync(_reservations[0].UserId, _reservations[0].RoomId);
         if (reservation == null)
         {
             Assert.Fail();
         }
         //Act
-        var deleteResult = await _reservationRepository.DeleteByUserAndRoomId(reservation.UserId, reservation.RoomId);
+        var deleteResult = await _reservationRepository.DeleteByUserAndRoomIdAsync(reservation.UserId, reservation.RoomId);
         var saveChangesResult = await _context.SaveChangesAsync();
-        var getResult = await _reservationRepository.GetByUserAndRoomId(reservation.UserId, reservation.RoomId);
+        var getResult = await _reservationRepository.GetByUserAndRoomIdAsync(reservation.UserId, reservation.RoomId);
 
         //Assert
         deleteResult.Should().BeEquivalentTo(reservation);
@@ -308,7 +264,7 @@ public class ReservationRepositoryTests : IDisposable
         //Arrange
 
         //Act
-        var deleteResult = await _reservationRepository.DeleteByUserAndRoomId(-1, -1);
+        var deleteResult = await _reservationRepository.DeleteByUserAndRoomIdAsync(-1, -1);
         var saveChangesResult = await _context.SaveChangesAsync();
 
         //Assert

@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using TravelAndAccommodationBookingPlatform.Application.DTOs.Room;
 using TravelAndAccommodationBookingPlatform.Application.Interfaces;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
@@ -21,15 +22,15 @@ public class RoomService : IRoomService
         _hotelRepository = hotelRepository;
         _mapper = mapper;
     }
-    public async Task<(IEnumerable<RoomDto>, PaginationMetaData)> GetAll(RoomQueryParameters queryParams)
+    public async Task<(IEnumerable<RoomDto>, PaginationMetaData)> GetAllAsync(RoomQueryParameters queryParams)
     {
-        var (entities, paginationMetaData) = await _roomRepository.GetAll(queryParams);
+        var (entities, paginationMetaData) = await _roomRepository.GetAllAsync(queryParams);
         var rooms = _mapper.Map<IEnumerable<RoomDto>>(entities);
         return (rooms, paginationMetaData);
     }
-    public async Task<RoomDto?> Create(RoomCreationDto entity)
+    public async Task<RoomDto?> CreateAsync(RoomCreationDto entity)
     {
-        var hotel = await _hotelRepository.GetById(entity.HotelId);
+        var hotel = await _hotelRepository.GetByIdAsync(entity.HotelId);
         if (hotel is null)
         {
             return null;
@@ -37,36 +38,42 @@ public class RoomService : IRoomService
         var room = _mapper.Map<Room>(entity);
         room.CreatedAt = DateTime.UtcNow;
         room.UpdatedAt = DateTime.UtcNow;
-        var creationResult = await _roomRepository.Create(room);
+        var creationResult = await _roomRepository.CreateAsync(room);
         if (creationResult is null)
         {
             return null;
         }
         return _mapper.Map<RoomDto>(creationResult);
     }
-    public async Task<RoomDto?> UpdateAsync(RoomUpdateDto entity)
+    public async Task<RoomDto?> UpdateAsync(int id, JsonPatchDocument<RoomUpdateDto> patchDocument)
     {
-        var room = _mapper.Map<Room>(entity);
-        room.UpdatedAt = DateTime.UtcNow;
-        var updateResult = await _roomRepository.UpdateAsync(room);
-        if (updateResult is null)
+        var room = await _roomRepository.GetByIdAsync(id);
+        if (room is null)
         {
             return null;
         }
-        return _mapper.Map<RoomDto>(updateResult);
+        var updatedRoom = _mapper.Map<RoomUpdateDto>(room);
+
+        patchDocument.ApplyTo(updatedRoom);
+        _mapper.Map(updatedRoom, room);
+        room.UpdatedAt = DateTime.UtcNow;
+
+        await _roomRepository.SaveChangesAsync();
+        return _mapper.Map<RoomDto>(room);
     }
-    public async Task<RoomDto?> GetById(int id)
+
+    public async Task<RoomDto?> GetByIdAsync(int id)
     {
-        var room = await _roomRepository.GetById(id);
+        var room = await _roomRepository.GetByIdAsync(id);
         if (room is null)
         {
             return null;
         }
         return _mapper.Map<RoomDto>(room);
     }
-    public async Task<RoomDto?> Delete(int id)
+    public async Task<RoomDto?> DeleteAsync(int id)
     {
-        var deletedRoom = await _roomRepository.Delete(id);
+        var deletedRoom = await _roomRepository.DeleteAsync(id);
         if (deletedRoom is null)
         {
             return null;

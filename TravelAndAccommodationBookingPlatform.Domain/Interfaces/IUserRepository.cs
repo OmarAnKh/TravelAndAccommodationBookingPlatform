@@ -5,9 +5,9 @@ namespace TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 
 public interface IUserRepository : IRepository<User, UserQueryParameters>
 {
-    Task<User?> GetById(int id);
-    Task<User?> Delete(int id);
-    Task<User?> GetByEmail(string email);
-    Task<User?> GetByUsername(string username);
+    Task<User?> GetByIdAsync(int id);
+    Task<User?> DeleteAsync(int id);
+    Task<User?> GetByEmailAsync(string email);
+    Task<User?> GetByUsernameAsync(string username);
 
 }

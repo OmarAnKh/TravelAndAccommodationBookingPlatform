@@ -46,7 +46,7 @@ public class LocationRepositoryTests : IDisposable
         };
 
         //Act
-        var (entities, paginationMetaData) = await _locationRepository.GetAll(queryParameter);
+        var (entities, paginationMetaData) = await _locationRepository.GetAllAsync(queryParameter);
         var resultList = entities.ToList();
 
         int expectedCount = Math.Max(0, Math.Min(resultList.Count, pageSize));
@@ -75,7 +75,7 @@ public class LocationRepositoryTests : IDisposable
         };
 
         //Act
-        var (entities, paginationMetaData) = await _locationRepository.GetAll(queryParameters);
+        var (entities, paginationMetaData) = await _locationRepository.GetAllAsync(queryParameters);
         var resultList = entities.ToList();
         var queryableResult = _locations.AsQueryable();
 
@@ -105,7 +105,7 @@ public class LocationRepositoryTests : IDisposable
         //Arrange
 
         //Act
-        var (entities, paginationMetaData) = await _locationRepository.GetAll(new LocationQueryParameters());
+        var (entities, paginationMetaData) = await _locationRepository.GetAllAsync(new LocationQueryParameters());
 
         //
         paginationMetaData.CurrentPage.Should().Be(1);
@@ -120,7 +120,7 @@ public class LocationRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
         var locationHotelId = _locations.First().HotelId;
         //Act
-        var result = await _locationRepository.GetById(locationHotelId);
+        var result = await _locationRepository.GetByIdAsync(locationHotelId);
 
         //Assert
         result.Should().NotBeNull();
@@ -137,7 +137,7 @@ public class LocationRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         //Act
-        var result = await _locationRepository.GetById(locationHotelId);
+        var result = await _locationRepository.GetByIdAsync(locationHotelId);
 
         //Assert
         result.Should().BeNull();
@@ -151,7 +151,7 @@ public class LocationRepositoryTests : IDisposable
         var location = new Location { HotelId = 6, Latitude = 49.8566f, Longitude = 1.3522f };
 
         //Act
-        var createResult = await _locationRepository.Create(location);
+        var createResult = await _locationRepository.CreateAsync(location);
         var saveChangesResult = await _context.SaveChangesAsync();
 
         //Assert
@@ -162,53 +162,17 @@ public class LocationRepositoryTests : IDisposable
 
 
     [Fact]
-    public async Task UpdateLocation_WithValidData_ShouldUpdateLocation()
-    {
-        //Arrange
-        await _context.Locations.AddRangeAsync(_locations);
-        await _context.SaveChangesAsync();
-        var location = await _locationRepository.GetById(_locations[0].HotelId);
-        location.Latitude = 49.8566f;
-        location.Longitude = 1.3522f;
-
-        //Act
-        var updateResult = await _locationRepository.UpdateAsync(location);
-        var saveChangesResult = await _context.SaveChangesAsync();
-
-        //Assert
-        updateResult.Should().BeEquivalentTo(location);
-        saveChangesResult.Should().Be(1);
-
-    }
-
-
-    [Fact]
-    public async Task UpdateLocation_WithInvalidData_ShouldReturnNull()
-    {
-        //Arrange
-        var location = new Location { HotelId = -1, Latitude = 49.8566f, Longitude = 1.3522f };
-
-        //Act
-        var updateResult = await _locationRepository.UpdateAsync(location);
-        var saveChangesResult = await _context.SaveChangesAsync();
-
-        //Assert
-        updateResult.Should().BeNull();
-        saveChangesResult.Should().Be(0);
-    }
-
-    [Fact]
     public async Task DeleteLocation_WithValidData_ShouldDeleteLocation()
     {
         //Arrange
         await _context.Locations.AddRangeAsync(_locations);
         await _context.SaveChangesAsync();
-        var location = await _locationRepository.GetById(_locations[0].HotelId);
+        var location = await _locationRepository.GetByIdAsync(_locations[0].HotelId);
 
         //Act
-        var deleteResult = await _locationRepository.Delete(location.HotelId);
+        var deleteResult = await _locationRepository.DeleteAsync(location.HotelId);
         var saveChangesResult = await _context.SaveChangesAsync();
-        var getResult = await _locationRepository.GetById(location.HotelId);
+        var getResult = await _locationRepository.GetByIdAsync(location.HotelId);
 
         //Assert
         deleteResult.Should().NotBeNull();
@@ -225,7 +189,7 @@ public class LocationRepositoryTests : IDisposable
         var location = new Location { HotelId = -1, Latitude = 49.8566f, Longitude = 1.3522f };
 
         //Act
-        var deleteResult = await _locationRepository.Delete(location.HotelId);
+        var deleteResult = await _locationRepository.DeleteAsync(location.HotelId);
         var saveChangesResult = await _context.SaveChangesAsync();
 
         //Assert

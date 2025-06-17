@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using TravelAndAccommodationBookingPlatform.Application.DTOs.User;
 using TravelAndAccommodationBookingPlatform.Application.Interfaces;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
@@ -19,14 +20,14 @@ public class UserService : IUserService
         _mapper = mapper;
     }
 
-    public async Task<(IEnumerable<UserDto>, PaginationMetaData)> GetAll(UserQueryParameters queryParams)
+    public async Task<(IEnumerable<UserDto>, PaginationMetaData)> GetAllAsync(UserQueryParameters queryParams)
     {
-        var (entities, paginationMetaData) = await _userRepository.GetAll(queryParams);
+        var (entities, paginationMetaData) = await _userRepository.GetAllAsync(queryParams);
         var users = _mapper.Map<IEnumerable<UserDto>>(entities);
         return (users, paginationMetaData);
     }
 
-    public async Task<UserDto?> Create(UserCreationDto entity)
+    public async Task<UserDto?> CreateAsync(UserCreationDto entity)
     {
         var isNotValid = await UserExists(entity);
         if (isNotValid)
@@ -36,30 +37,29 @@ public class UserService : IUserService
         var user = _mapper.Map<User>(entity);
         user.CreatedAt = DateTime.UtcNow;
         user.UpdatedAt = DateTime.UtcNow;
-        var createdUser = await _userRepository.Create(user);
+        var createdUser = await _userRepository.CreateAsync(user);
         return _mapper.Map<UserDto>(createdUser);
     }
-    public async Task<UserDto?> UpdateAsync(UserUpdateDto entity)
+    public async Task<UserDto?> UpdateAsync(int id, JsonPatchDocument<UserUpdateDto> patchDocument)
     {
-        var usernameExists = await _userRepository.GetByUsername(entity.Username);
-        if (usernameExists is not null)
+        var user = await _userRepository.GetByIdAsync(id);
+        if (user is null)
         {
             return null;
         }
-        var user = _mapper.Map<User>(entity);
-        user.UpdatedAt = DateTime.UtcNow;
-        var updateResult = await _userRepository.UpdateAsync(user);
-        if (updateResult is null)
-        {
-            return null;
-        }
-        return _mapper.Map<UserDto>(updateResult);
+        var updatedUser = _mapper.Map<UserUpdateDto>(user);
+        patchDocument.ApplyTo(updatedUser);
 
+        _mapper.Map(updatedUser, user);
+        user.UpdatedAt = DateTime.UtcNow;
+        await _userRepository.SaveChangesAsync();
+        return _mapper.Map<UserDto>(user);
     }
 
-    public async Task<UserDto?> GetById(int id)
+
+    public async Task<UserDto?> GetByIdAsync(int id)
     {
-        var user = await _userRepository.GetById(id);
+        var user = await _userRepository.GetByIdAsync(id);
         if (user is null)
         {
             return null;
@@ -68,18 +68,18 @@ public class UserService : IUserService
     }
 
 
-    public async Task<UserDto?> Delete(int id)
+    public async Task<UserDto?> DeleteAsync(int id)
     {
-        var deleteResult = await _userRepository.Delete(id);
+        var deleteResult = await _userRepository.DeleteAsync(id);
         if (deleteResult is null)
         {
             return null;
         }
         return _mapper.Map<UserDto>(deleteResult);
     }
-    public async Task<UserDto?> GetByEmail(string email)
+    public async Task<UserDto?> GetByEmailAsync(string email)
     {
-        var user = await _userRepository.GetByEmail(email);
+        var user = await _userRepository.GetByEmailAsync(email);
         if (user is null)
         {
             return null;
@@ -87,9 +87,9 @@ public class UserService : IUserService
         return _mapper.Map<UserDto>(user);
     }
 
-    public async Task<UserDto?> GetByUsername(string username)
+    public async Task<UserDto?> GetByUsernameAsync(string username)
     {
-        var user = await _userRepository.GetByUsername(username);
+        var user = await _userRepository.GetByUsernameAsync(username);
         if (user is null)
         {
             return null;
@@ -99,8 +99,8 @@ public class UserService : IUserService
 
     private async Task<bool> UserExists(UserCreationDto entity)
     {
-        var usernameExists = await _userRepository.GetByUsername(entity.Username);
-        var emailExists = await _userRepository.GetByEmail(entity.Email);
+        var usernameExists = await _userRepository.GetByUsernameAsync(entity.Username);
+        var emailExists = await _userRepository.GetByEmailAsync(entity.Email);
         if (usernameExists != null || emailExists != null)
         {
             return true;
