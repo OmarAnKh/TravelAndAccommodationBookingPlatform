@@ -13,6 +13,6 @@ public interface IUserService : IService<User, UserQueryParameters, UserCreation
     Task<UserDto?> GetByUsernameAsync(string username);
     Task<UserDto?> CreateAsync(UserCreationDto entity);
     Task<UserDto?> UpdateAsync(int id, JsonPatchDocument<UserUpdateDto> patchDocument);
-
+    Task<UserDto?> ValidateCredentialsAsync(string email, string password);
 
 }

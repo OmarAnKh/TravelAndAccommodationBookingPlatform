@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Azure;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using TravelAndAccommodationBookingPlatform.Application.DTOs.Hotel;
@@ -17,7 +17,6 @@ public class HotelController : ControllerBase
 {
 
     private readonly IHotelService _hotelService;
-    private const int MaxPageSize = 10;
     /// <summary>
     /// Initializes a new instance of the <see cref="HotelController"/> class.
     /// </summary>
@@ -35,9 +34,9 @@ public class HotelController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<HotelDto>>> GetHotels([FromQuery] HotelQueryParameters queryParameters)
     {
-        if (queryParameters.PageSize > MaxPageSize)
+        if (!ModelState.IsValid)
         {
-            queryParameters.PageSize = MaxPageSize;
+            return BadRequest(ModelState);
         }
 
         var (hotels, metaData) = await _hotelService.GetAllAsync(queryParameters);
@@ -52,6 +51,7 @@ public class HotelController : ControllerBase
     /// <param name="hotelDto">The hotel creation data.</param>
     /// <param name="thumbnails">List of image files to use as hotel thumbnails (at least one is required).</param>
     /// <returns>The created hotel and a 201 Created response, or an error status if creation fails.</returns>
+    [Authorize(Policy = "MustBeAnAdmin")]
     [HttpPost]
     public async Task<IActionResult> PostHotel([FromForm] HotelCreationDto hotelDto, List<IFormFile> thumbnails)
     {
@@ -87,13 +87,13 @@ public class HotelController : ControllerBase
     /// <summary>
     /// Applies a JSON patch to a hotel entity by ID.
     /// </summary>
-    /// <param name="id">The ID of the hotel to update.</param>
     /// <param name="hotelDto">The JSON patch document describing changes to apply.</param>
     /// <returns>The updated <see cref="HotelDto"/> if successful, or 404 if the hotel is not found.</returns>
+    [Authorize(Policy = "MustBeAnAdmin")]
     [HttpPatch]
-    public async Task<ActionResult<HotelDto>> PatchHotel(int id, JsonPatchDocument<HotelUpdateDto> hotelDto)
+    public async Task<ActionResult<HotelDto>> PatchHotel(JsonPatchDocument<HotelUpdateDto> hotelDto)
     {
-        var updatedHotel = await _hotelService.UpdateAsync(id, hotelDto);
+        var updatedHotel = await _hotelService.UpdateAsync(Convert.ToInt32(User.FindFirst("UserId")?.Value), hotelDto);
         if (updatedHotel == null)
         {
             return NotFound();
@@ -106,6 +106,7 @@ public class HotelController : ControllerBase
     /// </summary>
     /// <param name="id">The ID of the hotel to delete.</param>
     /// <returns>The deleted <see cref="HotelDto"/> if successful, or 404 if the hotel is not found.</returns>
+    [Authorize(Policy = "MustBeAnAdmin")]
     [HttpDelete("{id}")]
     public async Task<ActionResult<HotelDto>> DeleteHotel(int id)
     {

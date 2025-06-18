@@ -6,6 +6,7 @@ using TravelAndAccommodationBookingPlatform.Application.Interfaces;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
+using TravelAndAccommodationBookingPlatform.Domain.Enums;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 
 namespace TravelAndAccommodationBookingPlatform.Application.Services;
@@ -14,13 +15,11 @@ public class ReservationService : IReservationService
 {
     private readonly IReservationRepository _reservationRepository;
     private readonly IRoomRepository _roomRepository;
-    private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
-    public ReservationService(IReservationRepository reservationRepository, IRoomRepository roomRepository, IUserRepository userRepository, IMapper mapper)
+    public ReservationService(IReservationRepository reservationRepository, IRoomRepository roomRepository, IMapper mapper)
     {
         _reservationRepository = reservationRepository;
         _roomRepository = roomRepository;
-        _userRepository = userRepository;
         _mapper = mapper;
     }
 
@@ -30,16 +29,11 @@ public class ReservationService : IReservationService
         var reservations = _mapper.Map<IEnumerable<ReservationDto>>(entities);
         return (reservations, paginationMetaData);
     }
-    public async Task<ReservationDto?> CreateAsync(ReservationCreationDto entity)
+    public async Task<ReservationDto?> CreateAsync(ReservationCreationDto entity, int userId)
     {
-        var user = await _userRepository.GetByIdAsync(entity.UserId);
         var room = await _roomRepository.GetByIdAsync(entity.RoomId);
         var isDateValid = DateValidation(entity.StartDate, entity.EndDate);
         if (!isDateValid)
-        {
-            return null;
-        }
-        if (user is null)
         {
             return null;
         }
@@ -48,6 +42,9 @@ public class ReservationService : IReservationService
             return null;
         }
         var reservation = _mapper.Map<Reservation>(entity);
+        reservation.UserId = userId;
+        reservation.BookDate = DateTime.Now;
+
         var result = await _reservationRepository.CreateAsync(reservation);
         if (result is null)
         {
@@ -93,6 +90,31 @@ public class ReservationService : IReservationService
         return _mapper.Map<ReservationDto>(reservation);
     }
 
+    public async Task<bool> MarkAsPaidAsync(int userId, int roomId)
+    {
+        var reservation = await _reservationRepository.GetByUserAndRoomIdAsync(userId, roomId);
+        if (reservation is null)
+        {
+            return false;
+        }
+        reservation.PaymentStatus = PaymentStatus.Completed;
+        reservation.BookingStatus = BookingStatus.Confirmed;
+        await _reservationRepository.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> MarkAsFailedAsync(int userId, int roomId)
+    {
+        var reservation = await _reservationRepository.GetByUserAndRoomIdAsync(userId, roomId);
+        if (reservation is null)
+        {
+            return false;
+        }
+        reservation.PaymentStatus = PaymentStatus.Failed;
+        reservation.BookingStatus = BookingStatus.Cancelled;
+        await _reservationRepository.SaveChangesAsync();
+        return true;
+    }
     private bool DateValidation(DateTime startDate, DateTime endDate)
     {
         if (startDate < DateTime.Today)

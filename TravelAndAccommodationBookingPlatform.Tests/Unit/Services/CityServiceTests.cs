@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Moq;
 using TravelAndAccommodationBookingPlatform.Application.DTOs.City;
+using TravelAndAccommodationBookingPlatform.Application.Interfaces;
 using TravelAndAccommodationBookingPlatform.Application.Services;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
@@ -18,7 +19,7 @@ public class CityServiceTests
     private readonly Mock<ICityRepository> _cityRepoMock;
     private readonly Mock<IImageUploader> _imageUploaderMock;
     private readonly Mock<IMapper> _mapperMock;
-    private readonly CityService _cityService;
+    private readonly ICityService _cityService;
 
     public CityServiceTests()
     {

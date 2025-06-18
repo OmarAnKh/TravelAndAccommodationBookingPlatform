@@ -7,16 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="Common\"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\TravelAndAccommodationBookingPlatform.Domain\TravelAndAccommodationBookingPlatform.Domain.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="AutoMapper" Version="8.0.0"/>
         <PackageReference Include="AWSSDK.S3" Version="4.0.1.6"/>
+        <PackageReference Include="BCrypt.Net-Next" Version="4.0.3"/>
         <PackageReference Include="DotNetEnv" Version="3.1.1"/>
         <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0"/>
         <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="8.0.0"/>

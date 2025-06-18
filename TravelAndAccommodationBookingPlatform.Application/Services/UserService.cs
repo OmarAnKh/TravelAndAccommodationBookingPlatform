@@ -35,9 +35,11 @@ public class UserService : IUserService
             return null;
         }
         var user = _mapper.Map<User>(entity);
+        user.Password = BCrypt.Net.BCrypt.HashPassword(entity.Password);
         user.CreatedAt = DateTime.UtcNow;
         user.UpdatedAt = DateTime.UtcNow;
         var createdUser = await _userRepository.CreateAsync(user);
+        await _userRepository.SaveChangesAsync();
         return _mapper.Map<UserDto>(createdUser);
     }
     public async Task<UserDto?> UpdateAsync(int id, JsonPatchDocument<UserUpdateDto> patchDocument)
@@ -47,10 +49,18 @@ public class UserService : IUserService
         {
             return null;
         }
+
         var updatedUser = _mapper.Map<UserUpdateDto>(user);
         patchDocument.ApplyTo(updatedUser);
 
         _mapper.Map(updatedUser, user);
+
+        var isUsernameTaken = await IsUsernameUsed(user.Username, id);
+        if (isUsernameTaken)
+        {
+            return null;
+        }
+
         user.UpdatedAt = DateTime.UtcNow;
         await _userRepository.SaveChangesAsync();
         return _mapper.Map<UserDto>(user);
@@ -97,6 +107,16 @@ public class UserService : IUserService
         return _mapper.Map<UserDto>(user);
     }
 
+    public async Task<UserDto?> ValidateCredentialsAsync(string email, string password)
+    {
+        var user = await _userRepository.GetByUsernameAsync(email);
+        if (user is null)
+        {
+            return null;
+        }
+        bool isValidPassword = BCrypt.Net.BCrypt.Verify(password, user.Password);
+        return isValidPassword ? _mapper.Map<UserDto>(user) : null;
+    }
     private async Task<bool> UserExists(UserCreationDto entity)
     {
         var usernameExists = await _userRepository.GetByUsernameAsync(entity.Username);
@@ -106,5 +126,11 @@ public class UserService : IUserService
             return true;
         }
         return false;
+    }
+
+    private async Task<bool> IsUsernameUsed(string username, int excludeUserId)
+    {
+        var user = await _userRepository.GetByUsernameAsync(username);
+        return user != null && user.Id != excludeUserId;
     }
 }
