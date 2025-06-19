@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -12,7 +13,7 @@ using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 namespace TravelAndAccommodationBookingPlatform.API.Controllers;
 
 /// <summary>
-/// Controller for managing users in the Travel and Accommodation Booking Platform.
+/// Controller for managing users.
 /// Provides endpoints for CRUD operations and user authentication.
 /// </summary>
 [ApiController]
@@ -50,6 +51,9 @@ public class UserController : ControllerBase
     /// <param name="userQueryParameters">The query parameters for filtering and pagination.</param>
     /// <returns>A list of user DTOs with pagination metadata in the response headers.</returns>
     [HttpGet]
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers([FromQuery] UserQueryParameters userQueryParameters)
     {
         if (!ModelState.IsValid)
@@ -68,6 +72,9 @@ public class UserController : ControllerBase
     /// <param name="id">The ID of the user to retrieve.</param>
     /// <returns>The user DTO if found; otherwise, a 404 Not Found response.</returns>
     [HttpGet("{id}")]
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserDto>> GetUser(int id)
     {
         var user = await _userService.GetByIdAsync(id);
@@ -84,6 +91,8 @@ public class UserController : ControllerBase
     /// <param name="user">The user creation DTO containing new user details.</param>
     /// <returns>The created user DTO if successful; otherwise, a 400 Bad Request response.</returns>
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserDto>> PostUser(UserCreationDto user)
     {
         var createResult = await _userService.CreateAsync(user);
@@ -100,7 +109,11 @@ public class UserController : ControllerBase
     /// <param name="id">The ID of the user to update.</param>
     /// <param name="user">The JSON Patch document with the fields to update.</param>
     /// <returns>The updated user DTO if successful; otherwise, a 400 Bad Request response.</returns>
+    [Authorize]
     [HttpPatch]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<UserDto>> PatchUser(int id, JsonPatchDocument<UserUpdateDto> user)
     {
         var updateResult = await _userService.UpdateAsync(id, user);

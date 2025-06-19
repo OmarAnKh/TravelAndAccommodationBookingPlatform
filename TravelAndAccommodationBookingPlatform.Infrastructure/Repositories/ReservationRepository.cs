@@ -80,17 +80,6 @@ public class ReservationRepository : IReservationRepository
     }
 
 
-    public async Task<Reservation?> DeleteByUserAndRoomIdAsync(int userId, int roomId)
-    {
-        var reservation = await _context.Reservations.FirstOrDefaultAsync(r => r.UserId == userId && r.RoomId == roomId);
-        if (reservation == null)
-        {
-            return null;
-        }
-        _context.Reservations.Remove(reservation);
-        return reservation;
-    }
-
     public async Task<int> SaveChangesAsync()
     {
         return await _context.SaveChangesAsync();

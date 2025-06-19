@@ -1,4 +1,5 @@
 using System.Text.Json;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -17,13 +18,15 @@ public class HotelController : ControllerBase
 {
 
     private readonly IHotelService _hotelService;
+    private readonly IMapper _mapper;
     /// <summary>
     /// Initializes a new instance of the <see cref="HotelController"/> class.
     /// </summary>
     /// <param name="hotelService">The hotel service dependency for performing hotel operations.</param>
-    public HotelController(IHotelService hotelService)
+    public HotelController(IHotelService hotelService, IMapper mapper)
     {
         _hotelService = hotelService;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -32,6 +35,8 @@ public class HotelController : ControllerBase
     /// <param name="queryParameters">Query parameters for filtering and pagination.</param>
     /// <returns>A list of <see cref="HotelDto"/> with pagination metadata in the response header.</returns>
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<IEnumerable<HotelDto>>> GetHotels([FromQuery] HotelQueryParameters queryParameters)
     {
         if (!ModelState.IsValid)
@@ -53,6 +58,9 @@ public class HotelController : ControllerBase
     /// <returns>The created hotel and a 201 Created response, or an error status if creation fails.</returns>
     [Authorize(Policy = "MustBeAnAdmin")]
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PostHotel([FromForm] HotelCreationDto hotelDto, List<IFormFile> thumbnails)
     {
         if (thumbnails.Count == 0)
@@ -73,6 +81,8 @@ public class HotelController : ControllerBase
     /// <param name="id">The ID of the hotel.</param>
     /// <returns>The <see cref="HotelDto"/> if found, otherwise a 404 Not Found response.</returns>
     [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<HotelDto>> GetHotelById(int id)
     {
         var hotel = await _hotelService.GetByIdAsync(id);
@@ -91,6 +101,9 @@ public class HotelController : ControllerBase
     /// <returns>The updated <see cref="HotelDto"/> if successful, or 404 if the hotel is not found.</returns>
     [Authorize(Policy = "MustBeAnAdmin")]
     [HttpPatch]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<HotelDto>> PatchHotel(JsonPatchDocument<HotelUpdateDto> hotelDto)
     {
         var updatedHotel = await _hotelService.UpdateAsync(Convert.ToInt32(User.FindFirst("UserId")?.Value), hotelDto);
@@ -108,6 +121,9 @@ public class HotelController : ControllerBase
     /// <returns>The deleted <see cref="HotelDto"/> if successful, or 404 if the hotel is not found.</returns>
     [Authorize(Policy = "MustBeAnAdmin")]
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<HotelDto>> DeleteHotel(int id)
     {
         var deletedHotel = await _hotelService.DeleteAsync(id);

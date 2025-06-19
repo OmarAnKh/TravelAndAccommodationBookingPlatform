@@ -111,16 +111,7 @@ public class ReservationService : IReservationService
         await _reservationRepository.SaveChangesAsync();
         return _mapper.Map<ReservationDto>(reservation);
     }
-    public async Task<ReservationDto?> DeleteByUserAndRoomIdAsync(int userId, int roomId)
-    {
-        var reservation = await _reservationRepository.DeleteByUserAndRoomIdAsync(userId, roomId);
-        if (reservation is null)
-        {
-            return null;
-        }
-        await _reservationRepository.SaveChangesAsync();
-        return _mapper.Map<ReservationDto>(reservation);
-    }
+
     public async Task<bool> MarkAsPaidAsync(int reservationId)
     {
         var reservation = await _reservationRepository.GetByIdAsync(reservationId);
@@ -142,6 +133,19 @@ public class ReservationService : IReservationService
             return false;
         }
         reservation.PaymentStatus = PaymentStatus.Failed;
+        reservation.BookingStatus = BookingStatus.Cancelled;
+        await _reservationRepository.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> MarkAsCancelledAsync(int reservationId)
+    {
+        var reservation = await _reservationRepository.GetByIdAsync(reservationId);
+        if (reservation is null)
+        {
+            return false;
+        }
+        reservation.PaymentStatus = PaymentStatus.Canceled;
         reservation.BookingStatus = BookingStatus.Cancelled;
         await _reservationRepository.SaveChangesAsync();
         return true;

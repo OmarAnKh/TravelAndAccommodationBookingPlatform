@@ -246,7 +246,7 @@ public class ReservationRepositoryTests : IDisposable
             Assert.Fail();
         }
         //Act
-        var deleteResult = await _reservationRepository.DeleteByUserAndRoomIdAsync(reservation.UserId, reservation.RoomId);
+        var deleteResult = await _reservationRepository.DeleteAsync(reservation.Id);
         var saveChangesResult = await _context.SaveChangesAsync();
         var getResult = await _reservationRepository.GetByUserAndRoomIdAsync(reservation.UserId, reservation.RoomId);
 
@@ -264,7 +264,7 @@ public class ReservationRepositoryTests : IDisposable
         //Arrange
 
         //Act
-        var deleteResult = await _reservationRepository.DeleteByUserAndRoomIdAsync(-1, -1);
+        var deleteResult = await _reservationRepository.DeleteAsync(-1);
         var saveChangesResult = await _context.SaveChangesAsync();
 
         //Assert
