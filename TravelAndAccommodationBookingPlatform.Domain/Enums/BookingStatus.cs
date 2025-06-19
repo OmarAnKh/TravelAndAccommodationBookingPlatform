@@ -2,7 +2,7 @@ namespace TravelAndAccommodationBookingPlatform.Domain.Enums;
 
 public enum BookingStatus
 {
-    Pending,
+    Pending = 1,
     Confirmed,
     Cancelled,
     CheckedIn,

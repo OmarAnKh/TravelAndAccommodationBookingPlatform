@@ -7,10 +7,7 @@ namespace TravelAndAccommodationBookingPlatform.Application.Interfaces;
 
 public interface ILocationService : IService<Location, LocationQueryParameters, LocationCreationDto, LocationUpdateDto, LocationDto>
 {
-    Task<LocationDto?> GetByIdAsync(int id);
-    Task<LocationDto?> DeleteAsync(int id);
     Task<LocationDto?> CreateAsync(LocationCreationDto entity);
-    Task<LocationDto?> UpdateAsync(int id, JsonPatchDocument<LocationUpdateDto> patchDocument);
 
 
 }

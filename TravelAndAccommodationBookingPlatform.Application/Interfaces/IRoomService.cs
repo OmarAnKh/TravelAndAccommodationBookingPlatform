@@ -7,9 +7,6 @@ namespace TravelAndAccommodationBookingPlatform.Application.Interfaces;
 
 public interface IRoomService : IService<Room, RoomQueryParameters, RoomCreationDto, RoomUpdateDto, RoomDto>
 {
-    Task<RoomDto?> GetByIdAsync(int id);
-    Task<RoomDto?> DeleteAsync(int id);
     Task<RoomDto?> CreateAsync(RoomCreationDto entity);
-    Task<RoomDto?> UpdateAsync(int id, JsonPatchDocument<RoomUpdateDto> patchDocument);
 
 }

@@ -8,10 +8,7 @@ namespace TravelAndAccommodationBookingPlatform.Application.Interfaces;
 
 public interface IHotelService : IService<Hotel, HotelQueryParameters, HotelCreationDto, HotelUpdateDto, HotelDto>
 {
-    Task<HotelDto?> GetByIdAsync(int id);
-    Task<HotelDto?> DeleteAsync(int id);
     Task<HotelDto?> CreateAsync(HotelCreationDto entity, List<IFormFile> thumbnails);
 
-    Task<HotelDto?> UpdateAsync(int id, JsonPatchDocument<HotelUpdateDto> patchDocument);
 
 }

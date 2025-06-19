@@ -1,6 +1,5 @@
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
-using TravelAndAccommodationBookingPlatform.Application.DTOs.Location;
 using TravelAndAccommodationBookingPlatform.Application.DTOs.Reservation;
 using TravelAndAccommodationBookingPlatform.Application.Interfaces;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
@@ -29,15 +28,28 @@ public class ReservationService : IReservationService
         var reservations = _mapper.Map<IEnumerable<ReservationDto>>(entities);
         return (reservations, paginationMetaData);
     }
+
+
     public async Task<ReservationDto?> CreateAsync(ReservationCreationDto entity, int userId)
     {
         var room = await _roomRepository.GetByIdAsync(entity.RoomId);
-        var isDateValid = DateValidation(entity.StartDate, entity.EndDate);
-        if (!isDateValid)
+        if (room is null)
         {
             return null;
         }
-        if (room is null)
+
+        if (!DateValidation(entity.StartDate, entity.EndDate))
+        {
+            return null;
+        }
+
+        var isOverlapping = await _reservationRepository.IsDateRangeOverlappingAsync(userId, entity.RoomId, entity.StartDate, entity.EndDate);
+        if (isOverlapping)
+        {
+            return null;
+        }
+        var isRoomBooked = await _reservationRepository.IsDateRangeOverlappingForRoomAsync(entity.RoomId, entity.StartDate, entity.EndDate);
+        if (isRoomBooked)
         {
             return null;
         }
@@ -50,12 +62,14 @@ public class ReservationService : IReservationService
         {
             return null;
         }
+
         await _reservationRepository.SaveChangesAsync();
         return _mapper.Map<ReservationDto>(result);
     }
-    public async Task<ReservationDto?> UpdateAsync(int userId, int roomId, JsonPatchDocument<ReservationUpdateDto> patchDocument)
+
+    public async Task<ReservationDto?> UpdateAsync(int reservationId, JsonPatchDocument<ReservationUpdateDto> patchDocument)
     {
-        var reservation = await _reservationRepository.GetByUserAndRoomIdAsync(userId, roomId);
+        var reservation = await _reservationRepository.GetByIdAsync(reservationId);
         if (reservation is null)
         {
             return null;
@@ -68,7 +82,15 @@ public class ReservationService : IReservationService
         return _mapper.Map<ReservationDto>(reservation);
     }
 
-
+    public async Task<ReservationDto?> GetByIdAsync(int id)
+    {
+        var reservation = await _reservationRepository.GetByIdAsync(id);
+        if (reservation is null)
+        {
+            return null;
+        }
+        return _mapper.Map<ReservationDto>(reservation);
+    }
     public async Task<ReservationDto?> GetByUserAndRoomIdAsync(int userId, int roomId)
     {
         var reservation = await _reservationRepository.GetByUserAndRoomIdAsync(userId, roomId);
@@ -79,6 +101,16 @@ public class ReservationService : IReservationService
         return _mapper.Map<ReservationDto>(reservation);
     }
 
+    public async Task<ReservationDto?> DeleteAsync(int reservationId)
+    {
+        var reservation = await _reservationRepository.DeleteAsync(reservationId);
+        if (reservation is null)
+        {
+            return null;
+        }
+        await _reservationRepository.SaveChangesAsync();
+        return _mapper.Map<ReservationDto>(reservation);
+    }
     public async Task<ReservationDto?> DeleteByUserAndRoomIdAsync(int userId, int roomId)
     {
         var reservation = await _reservationRepository.DeleteByUserAndRoomIdAsync(userId, roomId);
@@ -89,10 +121,9 @@ public class ReservationService : IReservationService
         await _reservationRepository.SaveChangesAsync();
         return _mapper.Map<ReservationDto>(reservation);
     }
-
-    public async Task<bool> MarkAsPaidAsync(int userId, int roomId)
+    public async Task<bool> MarkAsPaidAsync(int reservationId)
     {
-        var reservation = await _reservationRepository.GetByUserAndRoomIdAsync(userId, roomId);
+        var reservation = await _reservationRepository.GetByIdAsync(reservationId);
         if (reservation is null)
         {
             return false;
@@ -103,9 +134,9 @@ public class ReservationService : IReservationService
         return true;
     }
 
-    public async Task<bool> MarkAsFailedAsync(int userId, int roomId)
+    public async Task<bool> MarkAsFailedAsync(int reservationId)
     {
-        var reservation = await _reservationRepository.GetByUserAndRoomIdAsync(userId, roomId);
+        var reservation = await _reservationRepository.GetByIdAsync(reservationId);
         if (reservation is null)
         {
             return false;
@@ -127,4 +158,6 @@ public class ReservationService : IReservationService
         }
         return true;
     }
+
+
 }

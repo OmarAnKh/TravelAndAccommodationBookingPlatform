@@ -7,4 +7,7 @@ public interface IReservationRepository : IRepository<Reservation, ReservationQu
 {
     Task<Reservation?> GetByUserAndRoomIdAsync(int userId, int roomId);
     Task<Reservation?> DeleteByUserAndRoomIdAsync(int userId, int roomId);
+    Task<bool> IsDateRangeOverlappingAsync(int userId, int roomId, DateTime startDate, DateTime endDate);
+    Task<bool> IsDateRangeOverlappingForRoomAsync(int roomId, DateTime startDate, DateTime endDate);
+
 }

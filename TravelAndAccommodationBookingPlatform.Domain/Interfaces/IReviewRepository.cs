@@ -5,6 +5,4 @@ namespace TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 
 public interface IReviewRepository : IRepository<Review, ReviewQueryParameters>
 {
-    Task<Review?> GetByIdAsync(int id);
-    Task<Review?> DeleteAsync(int id);
 }

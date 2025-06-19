@@ -60,9 +60,7 @@ public class SqlServerDbContext : DbContext, IAppDbContext
             .WithMany(hotel => hotel.Rooms)
             .HasForeignKey(r => r.HotelId);
 
-        // Reservation composite key and relationships
-        modelBuilder.Entity<Reservation>()
-            .HasKey(r => new { r.UserId, r.RoomId });
+        // Reservation 
 
         modelBuilder.Entity<Reservation>()
             .HasOne<User>(r => r.User)

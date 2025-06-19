@@ -2,7 +2,8 @@ namespace TravelAndAccommodationBookingPlatform.Domain.Enums;
 
 public enum ImageEntityType
 {
-    Cities,
+    Cities = 1,
     Hotels,
-    Reviews
+    Reviews,
+    Rooms
 }

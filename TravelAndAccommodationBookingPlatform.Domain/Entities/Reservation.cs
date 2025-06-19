@@ -5,6 +5,7 @@ namespace TravelAndAccommodationBookingPlatform.Domain.Entities;
 
 public class Reservation
 {
+    public int Id { get; set; }
     public User User { get; set; }
     [Required] public int UserId { get; set; }
     public Room Room { get; set; }
