@@ -6,7 +6,7 @@ using TravelAndAccommodationBookingPlatform.Domain.Entities;
 
 namespace TravelAndAccommodationBookingPlatform.Application.Interfaces;
 
-public interface IReviewService : IService<Review, ReviewQueryParameters, ReviewCreationDto, ReviewUpdateDto, ReviewDto>
+public interface IReviewService : IService<Review, ReviewQueryParameters, ReviewCreationDto, ReviewUpdateDto, ReviewDto>,IImagesService
 {
     Task<ReviewDto?> CreateAsync(ReviewCreationDto entity, IFormFile file);
 

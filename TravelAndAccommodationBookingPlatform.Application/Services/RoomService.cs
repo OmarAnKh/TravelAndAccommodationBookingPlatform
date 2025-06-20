@@ -80,4 +80,5 @@ public class RoomService : IRoomService
         }
         return _mapper.Map<RoomDto>(deletedRoom);
     }
+    public async Task<List<string>?> GetImagesPathAsync(int id) => throw new NotImplementedException();
 }

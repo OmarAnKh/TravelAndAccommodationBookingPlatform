@@ -96,4 +96,15 @@ public class HotelService : IHotelService
         await _hotelRepository.SaveChangesAsync();
         return _mapper.Map<HotelDto>(deleteResult);
     }
+
+    public async Task<List<string>?> GetImagesPathAsync(int hotelId)
+    {
+        var hotel = await _hotelRepository.GetByIdAsync(hotelId);
+        if (hotel is null)
+        {
+            return null;
+        }
+        var images = await _imageUploader.GetImageUrlsAsync(hotel.Thumbnail);
+        return images;
+    }
 }

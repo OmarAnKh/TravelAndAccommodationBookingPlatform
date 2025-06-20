@@ -64,14 +64,13 @@ public class CityServiceTests
     public async Task Create_ShouldReturnMappedDto_WhenCreationSucceeds()
     {
         // Arrange
-        var fileMock = new Mock<IFormFile>();
+        var fileMock = new List<IFormFile>();
         const int expectedId = 10;
         const string cityName = "Jericho";
 
         var creationDto = new CityCreationDto
         {
             Name = cityName,
-            Thumbnail = "jericho.jpg",
             Country = "Palestine",
             PostOffice = "12345"
         };
@@ -79,7 +78,6 @@ public class CityServiceTests
         var city = new City
         {
             Name = cityName,
-            Thumbnail = creationDto.Thumbnail,
             Country = creationDto.Country,
             PostOffice = creationDto.PostOffice
         };
@@ -108,7 +106,7 @@ public class CityServiceTests
         _mapperMock.Setup(m => m.Map<CityDto>(created)).Returns(expectedDto);
 
         // Act
-        var result = await _cityService.CreateAsync(creationDto, fileMock.Object);
+        var result = await _cityService.CreateAsync(creationDto, fileMock);
 
         // Assert
         result.Should().NotBeNull();
@@ -120,7 +118,7 @@ public class CityServiceTests
     public async Task Create_ShouldReturnNull_WhenRepositoryReturnsNull()
     {
         // Arrange
-        var fileMock = new Mock<IFormFile>();
+        var fileMock = new List<IFormFile>();
         var creationDto = new CityCreationDto { Name = "FailCity" };
         var city = new City { Name = "FailCity" };
 
@@ -129,7 +127,7 @@ public class CityServiceTests
         _cityRepoMock.Setup(r => r.CreateAsync(city)).ReturnsAsync((City?)null);
 
         // Act
-        var result = await _cityService.CreateAsync(creationDto, fileMock.Object);
+        var result = await _cityService.CreateAsync(creationDto, fileMock);
 
         // Assert
         result.Should().BeNull();
@@ -180,7 +178,7 @@ public class CityServiceTests
         const string updatedCityName = "Updated City";
 
         var existingCity = new City { Id = cityId, Name = originalCityName };
-        var cityUpdateDto = new CityUpdateDto { CityId = cityId, Name = updatedCityName };
+        var cityUpdateDto = new CityUpdateDto { Name = updatedCityName };
         var expectedCityDto = new CityDto { Id = cityId, Name = updatedCityName };
 
         var patchDoc = new JsonPatchDocument<CityUpdateDto>();
@@ -232,12 +230,11 @@ public class CityServiceTests
         const string updatedName = "Updated City";
 
         var existingCity = new City { Id = cityId, Name = originalName };
-        var cityUpdateDto = new CityUpdateDto { CityId = cityId, Name = updatedName };
+        var cityUpdateDto = new CityUpdateDto { Name = updatedName };
         var expectedCityDto = new CityDto { Id = cityId, Name = updatedName };
 
         var patchDoc = new JsonPatchDocument<CityUpdateDto>();
         patchDoc.Replace(x => x.Name, updatedName);
-        patchDoc.Replace(x => x.CityId, cityId);
 
         _cityRepoMock.Setup(r => r.GetByIdAsync(cityId)).ReturnsAsync(existingCity);
         _mapperMock.Setup(m => m.Map<CityUpdateDto>(existingCity)).Returns(cityUpdateDto);

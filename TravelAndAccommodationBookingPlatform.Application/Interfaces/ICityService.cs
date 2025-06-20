@@ -6,8 +6,8 @@ using TravelAndAccommodationBookingPlatform.Domain.Entities;
 
 namespace TravelAndAccommodationBookingPlatform.Application.Interfaces;
 
-public interface ICityService : IService<City, CityQueryParameters, CityCreationDto, CityUpdateDto, CityDto>
+public interface ICityService : IService<City, CityQueryParameters, CityCreationDto, CityUpdateDto, CityDto>, IImagesService
 {
-    Task<CityDto?> CreateAsync(CityCreationDto entity, IFormFile file);
+    Task<CityDto?> CreateAsync(CityCreationDto entity, List<IFormFile> files);
 
 }

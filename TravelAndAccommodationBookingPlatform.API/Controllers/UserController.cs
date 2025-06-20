@@ -22,7 +22,6 @@ public class UserController : ControllerBase
 {
 
     private readonly IUserService _userService;
-    private readonly ILogger<UserController> _logger;
     private readonly string _secretKey;
     private readonly string _issuer;
     private readonly string _audience;
@@ -32,14 +31,11 @@ public class UserController : ControllerBase
     /// </summary>
     /// <param name="userService">The user service for managing users.</param>
     /// <param name="jwtProvider">Provides JWT configuration for token generation.</param>
-    /// <param name="logger">The logger instance.</param>
     public UserController(
         IUserService userService,
-        IJwtProvider jwtProvider,
-        ILogger<UserController> logger)
+        IJwtProvider jwtProvider)
     {
         _userService = userService;
-        _logger = logger;
         _secretKey = jwtProvider.SecretKey;
         _issuer = jwtProvider.Issuer;
         _audience = jwtProvider.Audience;
@@ -51,7 +47,6 @@ public class UserController : ControllerBase
     /// <param name="userQueryParameters">The query parameters for filtering and pagination.</param>
     /// <returns>A list of user DTOs with pagination metadata in the response headers.</returns>
     [HttpGet]
-    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers([FromQuery] UserQueryParameters userQueryParameters)
@@ -72,7 +67,6 @@ public class UserController : ControllerBase
     /// <param name="id">The ID of the user to retrieve.</param>
     /// <returns>The user DTO if found; otherwise, a 404 Not Found response.</returns>
     [HttpGet("{id}")]
-    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserDto>> GetUser(int id)

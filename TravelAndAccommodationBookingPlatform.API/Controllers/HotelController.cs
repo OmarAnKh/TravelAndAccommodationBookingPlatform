@@ -1,5 +1,4 @@
 using System.Text.Json;
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -18,15 +17,13 @@ public class HotelController : ControllerBase
 {
 
     private readonly IHotelService _hotelService;
-    private readonly IMapper _mapper;
     /// <summary>
     /// Initializes a new instance of the <see cref="HotelController"/> class.
     /// </summary>
     /// <param name="hotelService">The hotel service dependency for performing hotel operations.</param>
-    public HotelController(IHotelService hotelService, IMapper mapper)
+    public HotelController(IHotelService hotelService)
     {
         _hotelService = hotelService;
-        _mapper = mapper;
     }
 
     /// <summary>
@@ -55,12 +52,14 @@ public class HotelController : ControllerBase
     /// </summary>
     /// <param name="hotelDto">The hotel creation data.</param>
     /// <param name="thumbnails">List of image files to use as hotel thumbnails (at least one is required).</param>
-    /// <returns>The created hotel and a 201 Created response, or an error status if creation fails.</returns>
+    /// <returns>The created hotel.</returns>
     [Authorize(Policy = "MustBeAnAdmin")]
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> PostHotel([FromForm] HotelCreationDto hotelDto, List<IFormFile> thumbnails)
     {
         if (thumbnails.Count == 0)
@@ -79,7 +78,7 @@ public class HotelController : ControllerBase
     /// Retrieves a hotel by its unique ID.
     /// </summary>
     /// <param name="id">The ID of the hotel.</param>
-    /// <returns>The <see cref="HotelDto"/> if found, otherwise a 404 Not Found response.</returns>
+    /// <returns>A <see cref="HotelDto"/></returns>
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -97,16 +96,17 @@ public class HotelController : ControllerBase
     /// <summary>
     /// Applies a JSON patch to a hotel entity by ID.
     /// </summary>
+    /// <param name="hotelId">The ID of the hotel you want to update</param>
     /// <param name="hotelDto">The JSON patch document describing changes to apply.</param>
-    /// <returns>The updated <see cref="HotelDto"/> if successful, or 404 if the hotel is not found.</returns>
+    /// <returns>The updated <see cref="HotelDto"/>.</returns>
     [Authorize(Policy = "MustBeAnAdmin")]
     [HttpPatch]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<HotelDto>> PatchHotel(JsonPatchDocument<HotelUpdateDto> hotelDto)
+    public async Task<ActionResult<HotelDto>> PatchHotel(int hotelId, JsonPatchDocument<HotelUpdateDto> hotelDto)
     {
-        var updatedHotel = await _hotelService.UpdateAsync(Convert.ToInt32(User.FindFirst("UserId")?.Value), hotelDto);
+        var updatedHotel = await _hotelService.UpdateAsync(hotelId, hotelDto);
         if (updatedHotel == null)
         {
             return NotFound();
@@ -118,7 +118,7 @@ public class HotelController : ControllerBase
     /// Deletes a hotel by its ID.
     /// </summary>
     /// <param name="id">The ID of the hotel to delete.</param>
-    /// <returns>The deleted <see cref="HotelDto"/> if successful, or 404 if the hotel is not found.</returns>
+    /// <returns>The deleted <see cref="HotelDto"/> if successful.</returns>
     [Authorize(Policy = "MustBeAnAdmin")]
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -133,4 +133,17 @@ public class HotelController : ControllerBase
         }
         return Ok(deletedHotel);
     }
+
+    /// <summary>
+    /// Get Hotel images path by hotelId
+    /// </summary>
+    /// <param name="hotelId">The ID of the hotel you want</param>
+    /// <returns></returns>
+    [HttpGet("api/hotels/{hotelId}/images")]
+    public async Task<IActionResult> GetHotelImages(int hotelId)
+    {
+        var images = await _hotelService.GetImagesPathAsync(hotelId);
+        return Ok(images);
+    }
+
 }

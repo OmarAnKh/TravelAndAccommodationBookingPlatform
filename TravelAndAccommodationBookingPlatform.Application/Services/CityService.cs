@@ -6,6 +6,7 @@ using TravelAndAccommodationBookingPlatform.Application.Interfaces;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
+using TravelAndAccommodationBookingPlatform.Domain.Enums;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 
 namespace TravelAndAccommodationBookingPlatform.Application.Services;
@@ -32,11 +33,13 @@ public class CityService : ICityService
     }
 
 
-    public async Task<CityDto?> CreateAsync(CityCreationDto entity, IFormFile file)
+    public async Task<CityDto?> CreateAsync(CityCreationDto entity, List<IFormFile> files)
     {
+        var imagePath = await _imageUploader.UploadImagesAsync(files, ImageEntityType.Cities);
         var city = _mapper.Map<City>(entity);
         city.CreatedAt = DateTime.UtcNow;
         city.UpdatedAt = DateTime.UtcNow;
+        city.Thumbnail = imagePath;
         var creationResult = await _cityRepository.CreateAsync(city);
         if (creationResult == null)
         {
@@ -59,7 +62,7 @@ public class CityService : ICityService
         var cityToPatch = _mapper.Map<CityUpdateDto>(city);
         patchDocument.ApplyTo(cityToPatch);
 
-        _mapper.Map(city, cityToPatch);
+        _mapper.Map(cityToPatch, city);
         city.UpdatedAt = DateTime.UtcNow;
 
         await _cityRepository.SaveChangesAsync();
@@ -88,5 +91,16 @@ public class CityService : ICityService
         }
         await _cityRepository.SaveChangesAsync();
         return _mapper.Map<CityDto>(deleteResult);
+    }
+
+    public async Task<List<string>?> GetImagesPathAsync(int cityId)
+    {
+        var city = await _cityRepository.GetByIdAsync(cityId);
+        if (city is null)
+        {
+            return null;
+        }
+        var images = await _imageUploader.GetImageUrlsAsync(city.Thumbnail);
+        return images;
     }
 }

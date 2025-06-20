@@ -5,7 +5,7 @@ using TravelAndAccommodationBookingPlatform.Domain.Entities;
 
 namespace TravelAndAccommodationBookingPlatform.Application.Interfaces;
 
-public interface IRoomService : IService<Room, RoomQueryParameters, RoomCreationDto, RoomUpdateDto, RoomDto>
+public interface IRoomService : IService<Room, RoomQueryParameters, RoomCreationDto, RoomUpdateDto, RoomDto>,IImagesService
 {
     Task<RoomDto?> CreateAsync(RoomCreationDto entity);
 

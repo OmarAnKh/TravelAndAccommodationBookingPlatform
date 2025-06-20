@@ -90,4 +90,5 @@ public class ReviewService : IReviewService
         await _reviewRepository.SaveChangesAsync();
         return _mapper.Map<ReviewDto>(review);
     }
+    public async Task<List<string>?> GetImagesPathAsync(int id) => throw new NotImplementedException();
 }

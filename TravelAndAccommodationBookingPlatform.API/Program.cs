@@ -83,6 +83,7 @@ builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<ICityService, CityService>();
 builder.Services.AddDbContext<SqlServerDbContext>();
 
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(options =>
@@ -141,7 +142,7 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("MustBeAnAdmin", policy =>
     {
         policy.RequireAuthenticatedUser();
-        policy.RequireRole("Admin");
+        policy.RequireClaim("Role", "Admin");
     });
 
 var app = builder.Build();
