@@ -38,14 +38,23 @@ public class ReservationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<ReservationDto>>> GetReservations([FromQuery] ReservationQueryParameters reservationQueryParameters)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            _logger.LogWarning("Reservations query parameters are invalid.");
-            return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("Reservations query parameters are invalid.");
+                return BadRequest(ModelState);
+            }
+            var (reservation, metaData) = await _reservationService.GetAllAsync(reservationQueryParameters);
+            Response.Headers.Append("User-Pagination", JsonSerializer.Serialize(metaData));
+            return Ok(reservation);
         }
-        var (reservation, metaData) = await _reservationService.GetAllAsync(reservationQueryParameters);
-        Response.Headers.Append("User-Pagination", JsonSerializer.Serialize(metaData));
-        return Ok(reservation);
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Failed to get reservations.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+
     }
 
     /// <summary>
@@ -58,13 +67,22 @@ public class ReservationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ReservationDto>> GetReservationById(int id)
     {
-        var reservation = await _reservationService.GetByIdAsync(id);
-        if (reservation is null)
+        try
         {
-            _logger.LogCritical("Reservation not found.");
-            return NotFound();
+            var reservation = await _reservationService.GetByIdAsync(id);
+            if (reservation is null)
+            {
+                _logger.LogCritical("Reservation not found.");
+                return NotFound();
+            }
+            return Ok(reservation);
         }
-        return Ok(reservation);
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Failed to get reservation.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+
     }
 
     /// <summary>
@@ -78,13 +96,22 @@ public class ReservationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ReservationDto>> GetReservationByRoomId(int userId, int roomId)
     {
-        var reservation = await _reservationService.GetByUserAndRoomIdAsync(userId, roomId);
-        if (reservation is null)
+        try
         {
-            _logger.LogCritical("Reservation not found.");
-            return NotFound();
+            var reservation = await _reservationService.GetByUserAndRoomIdAsync(userId, roomId);
+            if (reservation is null)
+            {
+                _logger.LogCritical("Reservation not found.");
+                return NotFound();
+            }
+            return Ok(reservation);
         }
-        return Ok(reservation);
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Failed to get reservation.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+
     }
 
     /// <summary>
@@ -97,13 +124,22 @@ public class ReservationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteReservation(int id)
     {
-        var reservation = await _reservationService.DeleteAsync(id);
-        if (reservation is null)
+
+        try
         {
-            _logger.LogCritical("Reservation not found.");
-            return NotFound();
+            var reservation = await _reservationService.DeleteAsync(id);
+            if (reservation is null)
+            {
+                _logger.LogCritical("Reservation not found.");
+                return NotFound();
+            }
+            return NoContent();
         }
-        return NoContent();
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Failed to delete reservation.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
     }
 
     /// <summary>
@@ -118,12 +154,21 @@ public class ReservationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult> CancelReservation(int reservationId)
     {
-        var reservation = await _reservationService.MarkAsCancelledAsync(reservationId);
-        if (!reservation)
+        try
         {
-            _logger.LogCritical("Reservation not found.");
-            return NotFound();
+            var reservation = await _reservationService.MarkAsCancelledAsync(reservationId);
+            if (!reservation)
+            {
+                _logger.LogCritical("Reservation not found.");
+                return NotFound();
+            }
+            return NoContent();
         }
-        return NoContent();
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Failed to cancel reservation.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+
     }
 }

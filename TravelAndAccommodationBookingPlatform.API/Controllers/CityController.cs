@@ -37,15 +37,26 @@ public class CityController : ControllerBase
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<IEnumerable<CityDto>>> GetCities([FromQuery] CityQueryParameters queryParameters)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var (cities, metaData) = await _cityService.GetAllAsync(queryParameters);
+            Response.Headers.Append("Cities-Pagination", JsonSerializer.Serialize(metaData));
+            return Ok(cities);
         }
-        var (cities, metaData) = await _cityService.GetAllAsync(queryParameters);
-        Response.Headers.Append("Cities-Pagination", JsonSerializer.Serialize(metaData));
-        return Ok(cities);
+        catch (Exception e)
+        {
+
+            _logger.LogCritical(e, "Failed to retrieve Cities.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+
     }
 
     /// <summary>
@@ -62,17 +73,28 @@ public class CityController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<CityDto>> PostCity([FromForm] CityCreationDto cityDto, List<IFormFile> files)
     {
-        if (files.Count == 0)
-            return BadRequest("At least one hotel thumbnail is required.");
+        try
+        {
+            if (files.Count == 0)
+                return BadRequest("At least one hotel thumbnail is required.");
 
-        var createdHotel = await _cityService.CreateAsync(cityDto, files);
+            var createdHotel = await _cityService.CreateAsync(cityDto, files);
 
-        if (createdHotel == null)
-            return StatusCode(500, "Failed to create hotel.");
+            if (createdHotel == null)
+                return StatusCode(409, "Failed to create hotel.");
 
-        return CreatedAtAction(nameof(GetCityById), new { id = createdHotel.Id }, createdHotel);
+            return CreatedAtAction(nameof(GetCityById), new { id = createdHotel.Id }, createdHotel);
+        }
+        catch (Exception e)
+        {
+
+            _logger.LogCritical(e, "Failed to create city.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+
     }
 
     /// <summary>
@@ -83,15 +105,26 @@ public class CityController : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<CityDto>> GetCityById(int id)
     {
-        var city = await _cityService.GetByIdAsync(id);
-        if (city is null)
+        try
         {
-            _logger.LogCritical("Reservation not found.");
-            return NotFound();
+            var city = await _cityService.GetByIdAsync(id);
+            if (city is null)
+            {
+                _logger.LogCritical("Reservation not found.");
+                return NotFound();
+            }
+            return Ok(city);
         }
-        return Ok(city);
+        catch (Exception e)
+        {
+
+            _logger.LogCritical(e, "Failed to retrieve city.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+
     }
 
     /// <summary>
@@ -105,15 +138,26 @@ public class CityController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<CityDto?>> PatchCity(int id, JsonPatchDocument<CityUpdateDto> patchDocument)
     {
-        var updatedCity = await _cityService.UpdateAsync(id, patchDocument);
-        if (updatedCity is null)
+        try
         {
-            _logger.LogCritical("Reservation not found.");
-            return BadRequest();
+            var updatedCity = await _cityService.UpdateAsync(id, patchDocument);
+            if (updatedCity is null)
+            {
+                _logger.LogCritical("Reservation not found.");
+                return BadRequest();
+            }
+            return Ok(updatedCity);
         }
-        return Ok(updatedCity);
+        catch (Exception e)
+        {
+
+            _logger.LogCritical(e, "Failed to update city.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+
     }
 
     /// <summary>
@@ -126,15 +170,26 @@ public class CityController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<CityDto>> DeleteCity(int id)
     {
-        var deletedCity = await _cityService.DeleteAsync(id);
-        if (deletedCity is null)
+        try
         {
-            _logger.LogCritical("Reservation not found.");
-            return BadRequest();
+            var deletedCity = await _cityService.DeleteAsync(id);
+            if (deletedCity is null)
+            {
+                _logger.LogCritical("Reservation not found.");
+                return BadRequest();
+            }
+            return Ok(deletedCity);
         }
-        return Ok(deletedCity);
+        catch (Exception e)
+        {
+
+            _logger.LogCritical(e, "Failed to delete city.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+
     }
 
 
@@ -144,9 +199,21 @@ public class CityController : ControllerBase
     /// <param name="hotelId">The ID of the city you want</param>
     /// <returns>A List<see cref="String"/> represents the images paths>/></returns>
     [HttpGet("api/hotels/{hotelId}/images")]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHotelImages(int hotelId)
     {
-        var images = await _cityService.GetImagesPathAsync(hotelId);
-        return Ok(images);
+        try
+        {
+            var images = await _cityService.GetImagesPathAsync(hotelId);
+            return Ok(images);
+        }
+        catch (Exception e)
+        {
+
+            _logger.LogCritical(e, "Failed to retrieve hotel images.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+
     }
 }

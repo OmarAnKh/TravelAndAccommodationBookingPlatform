@@ -15,15 +15,18 @@ namespace TravelAndAccommodationBookingPlatform.API.Controllers;
 [Route("[controller]")]
 public class HotelController : ControllerBase
 {
-
     private readonly IHotelService _hotelService;
+    private readonly ILogger<HotelController> _logger;
+
     /// <summary>
-    /// Initializes a new instance of the <see cref="HotelController"/> class.
+    /// Initializes a new instance of the <see cref="HotelController"/> Class
     /// </summary>
     /// <param name="hotelService">The hotel service dependency for performing hotel operations.</param>
-    public HotelController(IHotelService hotelService)
+    /// <param name="logger">The logger service dependency for performing logging operations</param>
+    public HotelController(IHotelService hotelService, ILogger<HotelController> logger)
     {
         _hotelService = hotelService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -34,17 +37,25 @@ public class HotelController : ControllerBase
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<IEnumerable<HotelDto>>> GetHotels([FromQuery] HotelQueryParameters queryParameters)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var (hotels, metaData) = await _hotelService.GetAllAsync(queryParameters);
+            Response.Headers.Append("Hotel-Pagination", JsonSerializer.Serialize(metaData));
+            return Ok(hotels);
         }
-
-        var (hotels, metaData) = await _hotelService.GetAllAsync(queryParameters);
-        Response.Headers.Append("Hotel-Pagination", JsonSerializer.Serialize(metaData));
-        return Ok(hotels);
-
+        catch (Exception ex)
+        {
+            _logger.LogCritical(ex, "Failed to retrieve hotels.");
+            return StatusCode(500, "An unexpected error occurred while retrieving hotels.");
+        }
     }
 
     /// <summary>
@@ -56,22 +67,31 @@ public class HotelController : ControllerBase
     [Authorize(Policy = "MustBeAnAdmin")]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> PostHotel([FromForm] HotelCreationDto hotelDto, List<IFormFile> thumbnails)
     {
-        if (thumbnails.Count == 0)
-            return BadRequest("At least one hotel thumbnail is required.");
+        try
+        {
+            if (thumbnails.Count == 0)
+            {
+                return BadRequest("At least one hotel thumbnail is required.");
+            }
+            var createdHotel = await _hotelService.CreateAsync(hotelDto, thumbnails);
 
-        var createdHotel = await _hotelService.CreateAsync(hotelDto, thumbnails);
-
-        if (createdHotel == null)
-            return StatusCode(500, "Failed to create hotel.");
-
-        return CreatedAtAction(nameof(GetHotelById), new { id = createdHotel.Id }, createdHotel);
-
+            if (createdHotel == null)
+            {
+                return StatusCode(500, "Failed to create hotel.");
+            }
+            return CreatedAtAction(nameof(GetHotelById), new { id = createdHotel.Id }, createdHotel);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogCritical(ex, "Failed to create a new hotel.");
+            return StatusCode(500, "An unexpected error occurred while creating the hotel.");
+        }
     }
 
     /// <summary>
@@ -82,15 +102,23 @@ public class HotelController : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<HotelDto>> GetHotelById(int id)
     {
-        var hotel = await _hotelService.GetByIdAsync(id);
-        if (hotel == null)
+        try
         {
-            return NotFound();
+            var hotel = await _hotelService.GetByIdAsync(id);
+            if (hotel == null)
+            {
+                return NotFound();
+            }
+            return Ok(hotel);
         }
-
-        return Ok(hotel);
+        catch (Exception ex)
+        {
+            _logger.LogCritical(ex, $"Failed to get hotel with ID {id}.");
+            return StatusCode(500, "An unexpected error occurred while retrieving the hotel.");
+        }
     }
 
     /// <summary>
@@ -104,14 +132,24 @@ public class HotelController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<HotelDto>> PatchHotel(int hotelId, JsonPatchDocument<HotelUpdateDto> hotelDto)
     {
-        var updatedHotel = await _hotelService.UpdateAsync(hotelId, hotelDto);
-        if (updatedHotel == null)
+        try
         {
-            return NotFound();
+            var updatedHotel = await _hotelService.UpdateAsync(hotelId, hotelDto);
+            if (updatedHotel == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(updatedHotel);
         }
-        return Ok(updatedHotel);
+        catch (Exception ex)
+        {
+            _logger.LogCritical(ex, $"Failed to patch hotel with ID {hotelId}.");
+            return StatusCode(500, "An unexpected error occurred while updating the hotel.");
+        }
     }
 
     /// <summary>
@@ -124,14 +162,24 @@ public class HotelController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<HotelDto>> DeleteHotel(int id)
     {
-        var deletedHotel = await _hotelService.DeleteAsync(id);
-        if (deletedHotel == null)
+        try
         {
-            return NotFound();
+            var deletedHotel = await _hotelService.DeleteAsync(id);
+            if (deletedHotel == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(deletedHotel);
         }
-        return Ok(deletedHotel);
+        catch (Exception ex)
+        {
+            _logger.LogCritical(ex, $"Failed to delete hotel with ID {id}.");
+            return StatusCode(500, "An unexpected error occurred while deleting the hotel.");
+        }
     }
 
     /// <summary>
@@ -140,10 +188,19 @@ public class HotelController : ControllerBase
     /// <param name="hotelId">The ID of the hotel you want</param>
     /// <returns></returns>
     [HttpGet("api/hotels/{hotelId}/images")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetHotelImages(int hotelId)
     {
-        var images = await _hotelService.GetImagesPathAsync(hotelId);
-        return Ok(images);
+        try
+        {
+            var images = await _hotelService.GetImagesPathAsync(hotelId);
+            return Ok(images);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogCritical(ex, $"Failed to get images for hotel with ID {hotelId}.");
+            return StatusCode(500, "An unexpected error occurred while retrieving hotel images.");
+        }
     }
-
 }

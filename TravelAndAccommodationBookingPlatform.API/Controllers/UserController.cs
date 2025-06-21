@@ -25,20 +25,25 @@ public class UserController : ControllerBase
     private readonly string _secretKey;
     private readonly string _issuer;
     private readonly string _audience;
+    private readonly ILogger<UserController> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserController"/> class.
     /// </summary>
     /// <param name="userService">The user service for managing users.</param>
     /// <param name="jwtProvider">Provides JWT configuration for token generation.</param>
+    /// <param name="logger">Logger for User controller.</param>
     public UserController(
         IUserService userService,
-        IJwtProvider jwtProvider)
+        IJwtProvider jwtProvider
+        , ILogger<UserController> logger)
     {
         _userService = userService;
         _secretKey = jwtProvider.SecretKey;
         _issuer = jwtProvider.Issuer;
         _audience = jwtProvider.Audience;
+        _logger = logger;
+
     }
 
     /// <summary>
@@ -51,14 +56,23 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers([FromQuery] UserQueryParameters userQueryParameters)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var (users, metaData) = await _userService.GetAllAsync(userQueryParameters);
+            Response.Headers.Append("User-Pagination", JsonSerializer.Serialize(metaData));
+            return Ok(users);
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Failed to get users");
+            return StatusCode(500, "Internal server error");
         }
 
-        var (users, metaData) = await _userService.GetAllAsync(userQueryParameters);
-        Response.Headers.Append("User-Pagination", JsonSerializer.Serialize(metaData));
-        return Ok(users);
     }
 
     /// <summary>
@@ -71,12 +85,21 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserDto>> GetUser(int id)
     {
-        var user = await _userService.GetByIdAsync(id);
-        if (user == null)
+        try
         {
-            return NotFound();
+            var user = await _userService.GetByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
         }
-        return Ok(user);
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Failed to get user");
+            return StatusCode(500, "Internal server error");
+        }
+
     }
 
     /// <summary>
@@ -89,12 +112,21 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserDto>> PostUser(UserCreationDto user)
     {
-        var createResult = await _userService.CreateAsync(user);
-        if (createResult == null)
+        try
         {
-            return BadRequest();
+            var createResult = await _userService.CreateAsync(user);
+            if (createResult == null)
+            {
+                return BadRequest();
+            }
+            return Ok(createResult);
         }
-        return Ok(createResult);
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Failed to create user");
+            return StatusCode(500, "Internal server error");
+        }
+
     }
 
     /// <summary>
@@ -110,12 +142,21 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<UserDto>> PatchUser(int id, JsonPatchDocument<UserUpdateDto> user)
     {
-        var updateResult = await _userService.UpdateAsync(id, user);
-        if (updateResult == null)
+        try
         {
-            return BadRequest();
+            var updateResult = await _userService.UpdateAsync(id, user);
+            if (updateResult == null)
+            {
+                return BadRequest();
+            }
+            return Ok(updateResult);
         }
-        return Ok(updateResult);
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Failed to update user");
+            return StatusCode(500, "Internal server error");
+        }
+
     }
 
     /// <summary>
@@ -127,30 +168,39 @@ public class UserController : ControllerBase
     [HttpPost("Login")]
     public async Task<ActionResult<string>> Login(string email, string password)
     {
-        var user = await _userService.ValidateCredentialsAsync(email, password);
-        if (user == null)
+        try
         {
-            return Unauthorized("Invalid credentials");
+            var user = await _userService.ValidateCredentialsAsync(email, password);
+            if (user == null)
+            {
+                return Unauthorized("Invalid credentials");
+            }
+
+            var key = new SymmetricSecurityKey(Convert.FromBase64String(_secretKey));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim("UserId", user.Id.ToString()),
+                new Claim("Email", user.Email),
+                new Claim("Role", user.Role.ToString()),
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: _issuer,
+                audience: _audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: credentials
+            );
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            return Ok(tokenString);
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Failed to login");
+            return StatusCode(500, "Internal server error");
         }
 
-        var key = new SymmetricSecurityKey(Convert.FromBase64String(_secretKey));
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim("UserId", user.Id.ToString()),
-            new Claim("Email", user.Email),
-            new Claim("Role", user.Role.ToString()),
-        };
-
-        var token = new JwtSecurityToken(
-            issuer: _issuer,
-            audience: _audience,
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),
-            signingCredentials: credentials
-        );
-        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-        return Ok(tokenString);
     }
 }

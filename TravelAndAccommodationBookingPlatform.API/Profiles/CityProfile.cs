@@ -11,5 +11,7 @@ public class CityProfile : Profile
         CreateMap<CityCreationDto, City>();
         CreateMap<City, CityDto>();
         CreateMap<CityUpdateDto, City>();
+        CreateMap<City, CityUpdateDto>();
+
     }
 }

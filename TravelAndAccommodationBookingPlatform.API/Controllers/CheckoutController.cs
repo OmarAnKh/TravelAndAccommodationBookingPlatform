@@ -14,14 +14,15 @@ namespace TravelAndAccommodationBookingPlatform.API.Controllers;
 public class CheckoutController : ControllerBase
 {
     private readonly IPaymentService _paymentService;
-
+    private readonly ILogger<CheckoutController> _logger;
     /// <summary>
     /// Initializes a new instance of the <see cref="CheckoutController"/> class.
     /// </summary>
     /// <param name="paymentService">Service responsible for handling payment logic.</param>
-    public CheckoutController(IPaymentService paymentService)
+    public CheckoutController(IPaymentService paymentService, ILogger<CheckoutController> logger)
     {
         _paymentService = paymentService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -35,16 +36,27 @@ public class CheckoutController : ControllerBase
     /// <response code="401">User is not authorized.</response>
     [Authorize]
     [HttpPost("create-payment-intent")]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> CreatePaymentIntent([FromBody] ReservationCreationDto reservationCreationDto)
     {
-        var userId = User.FindFirst("UserId")?.Value;
-        if (userId == null)
+        try
         {
-            return Unauthorized();
+            var userId = User.FindFirst("UserId")?.Value;
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            var clientSecret = await _paymentService.CreatePaymentIntentAsync(reservationCreationDto, userId);
+            return Ok(new { clientSecret });
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(e.Message);
+            return StatusCode(500, "An unexpected error occurred.");
         }
 
-        var clientSecret = await _paymentService.CreatePaymentIntentAsync(reservationCreationDto, userId);
-        return Ok(new { clientSecret });
     }
 
     /// <summary>
@@ -60,26 +72,38 @@ public class CheckoutController : ControllerBase
     /// <response code="200">The event was successfully processed.</response>
     /// <response code="400">Invalid signature or processing failure.</response>
     [HttpPost("webhook")]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> StripeWebhook()
     {
-        var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
-        var webhookSecret = Environment.GetEnvironmentVariable("WEBHOOKSECRET")
-                            ?? throw new InvalidOperationException("Missing environment variable: WEBHOOKSECRET");
-
-        var stripeSignature = Request.Headers["Stripe-Signature"];
-
-        Event stripeEvent;
-
         try
         {
-            stripeEvent = EventUtility.ConstructEvent(json, stripeSignature, webhookSecret);
+            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+            var webhookSecret = Environment.GetEnvironmentVariable("WEBHOOKSECRET")
+                                ?? throw new InvalidOperationException("Missing environment variable: WEBHOOKSECRET");
+
+            var stripeSignature = Request.Headers["Stripe-Signature"];
+
+            Event stripeEvent;
+
+            try
+            {
+                stripeEvent = EventUtility.ConstructEvent(json, stripeSignature, webhookSecret);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Webhook error: {ex.Message}");
+            }
+
+            var (success, message) = await _paymentService.HandleStripeEventAsync(stripeEvent);
+            return success ? Ok(message) : BadRequest(message);
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            return BadRequest($"Webhook error: {ex.Message}");
+            _logger.LogCritical(e.Message);
+            return StatusCode(500, "An unexpected error occurred.");
         }
 
-        var (success, message) = await _paymentService.HandleStripeEventAsync(stripeEvent);
-        return success ? Ok(message) : BadRequest(message);
     }
 }

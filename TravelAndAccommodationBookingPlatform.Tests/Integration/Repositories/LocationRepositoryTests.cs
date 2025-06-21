@@ -60,7 +60,7 @@ public class LocationRepositoryTests : IDisposable
     [InlineData(5, null, null, 1, 10)]
     [InlineData(null, 41.3851f, 2.1734f, 1, 2)]
     [InlineData(null, null, null, 1, 10)]
-    public async Task GetAll_WithSearchTerm_ShouldReturnFilteredLocations(int? hotelId, float? latitude, float? longitude, int pageNumber, int pageSize)
+    public async Task GetAll_WithSearchTerm_ShouldReturnFilteredLocations(int hotelId, float latitude, float longitude, int pageNumber, int pageSize)
     {
         //Arrange
         _context.Locations.AddRange(_locations);
@@ -79,15 +79,11 @@ public class LocationRepositoryTests : IDisposable
         var resultList = entities.ToList();
         var queryableResult = _locations.AsQueryable();
 
-        if (hotelId.HasValue)
-        {
-            queryableResult = queryableResult.Where(location => location.HotelId == hotelId);
-        }
+        queryableResult = queryableResult.Where(location => location.HotelId == hotelId);
 
-        if (latitude.HasValue && longitude.HasValue)
-        {
-            queryableResult = queryableResult.Where(location => location.Latitude == latitude && location.Longitude == longitude);
-        }
+
+        queryableResult = queryableResult.Where(location => location.Latitude == latitude && location.Longitude == longitude);
+
 
         var listResult = queryableResult.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToList();
 

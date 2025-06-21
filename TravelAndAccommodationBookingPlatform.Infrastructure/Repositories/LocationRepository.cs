@@ -19,15 +19,22 @@ public class LocationRepository : ILocationRepository
     {
         var query = _context.Locations.AsQueryable();
 
-        if (queryParams.HotelId.HasValue)
+        if (queryParams.HotelId > 0)
         {
             query = query.Where(location => location.HotelId == queryParams.HotelId);
         }
 
-        if (queryParams is { Latitude: not null, Longitude: not null })
+        bool hasLat = Math.Abs(queryParams.Latitude) > 0.00001;
+        bool hasLng = Math.Abs(queryParams.Longitude) > 0.00001;
+        if (hasLat)
         {
-            query = query.Where(location => location.Latitude == queryParams.Latitude &&
-                                            location.Longitude == queryParams.Longitude);
+            query = query.Where(location =>
+                Math.Abs(location.Latitude - queryParams.Latitude) < 0.0001);
+        }
+        if (hasLng)
+        {
+            query = query.Where(location =>
+                Math.Abs(location.Longitude - queryParams.Longitude) < 0.0001);
         }
 
         int totalItemsCount = await query.CountAsync();
@@ -40,6 +47,7 @@ public class LocationRepository : ILocationRepository
 
         return (resultCollection, paginationMetaData);
     }
+
 
     public async Task<Location?> GetByIdAsync(int id)
     {
