@@ -64,7 +64,7 @@ public class RoomController : ControllerBase
     /// <param name="roomCreationDto">Room creation details.</param>
     /// <param name="files">List of images (at least one thumbnail is required).</param>
     /// <returns>The created room.</returns>
-    [Authorize]
+    [Authorize(Policy = "MustBeAnAdmin")]
     [HttpPost]
     [ProducesResponseType(typeof(RoomDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -131,7 +131,7 @@ public class RoomController : ControllerBase
     /// <param name="roomId">The ID of the room to update.</param>
     /// <param name="patchDocument">A JSON Patch document describing the updates.</param>
     /// <returns>The updated room.</returns>
-    [Authorize]
+    [Authorize(Policy = "MustBeAnAdmin")]
     [HttpPatch]
     [ProducesResponseType(typeof(RoomDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -162,7 +162,7 @@ public class RoomController : ControllerBase
     /// </summary>
     /// <param name="roomId">The ID of the room to delete.</param>
     /// <returns>The deleted room.</returns>
-    [Authorize]
+    [Authorize(Policy = "MustBeAnAdmin")]
     [HttpDelete("{roomId}")]
     [ProducesResponseType(typeof(RoomDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
