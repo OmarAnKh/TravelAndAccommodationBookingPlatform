@@ -25,11 +25,11 @@ public class RoomRepositoryTests : IDisposable
 
     private readonly List<Room> _rooms = new List<Room>
     {
-        new Room { HotelId = 1, RoomType = RoomType.Single, Price = 120, Availability = Availability.Available },
-        new Room { HotelId = 2, RoomType = RoomType.Deluxe, Price = 200, Availability = Availability.Unavailable },
-        new Room { HotelId = 3, RoomType = RoomType.Suite, Price = 300, Availability = Availability.Available },
-        new Room { HotelId = 4, RoomType = RoomType.Single, Price = 100, Availability = Availability.Unavailable },
-        new Room { HotelId = 5, RoomType = RoomType.Deluxe, Price = 180, Availability = Availability.Available }
+        new Room { HotelId = 1, RoomType = RoomType.Single, Price = 120, Availability = Availability.Available, FolderPath = "SomeFolderPath" },
+        new Room { HotelId = 2, RoomType = RoomType.Deluxe, Price = 200, Availability = Availability.Unavailable, FolderPath = "SomeFolderPath" },
+        new Room { HotelId = 3, RoomType = RoomType.Suite, Price = 300, Availability = Availability.Available, FolderPath = "SomeFolderPath" },
+        new Room { HotelId = 4, RoomType = RoomType.Single, Price = 100, Availability = Availability.Unavailable, FolderPath = "SomeFolderPath" },
+        new Room { HotelId = 5, RoomType = RoomType.Deluxe, Price = 180, Availability = Availability.Available, FolderPath = "SomeFolderPath" }
     };
 
     [Theory]
@@ -165,7 +165,7 @@ public class RoomRepositoryTests : IDisposable
     public async Task CreateRoom_WithValidParameters_ShouldCreateRoom()
     {
         //Arrange
-        var room = new Room { HotelId = 2, RoomType = RoomType.Deluxe, Price = 200, Availability = Availability.Unavailable };
+        var room = new Room { HotelId = 2, RoomType = RoomType.Deluxe, Price = 200, Availability = Availability.Unavailable, FolderPath = "SomeFolderPath" };
 
         //Act
         var createResult = await _roomRepository.CreateAsync(room);
@@ -221,9 +221,9 @@ public class RoomRepositoryTests : IDisposable
         //Arrange
         var rooms = new List<Room>
         {
-            new Room { HotelId = 2, RoomType = RoomType.Deluxe, Price = 200, Availability = Availability.Unavailable },
-            new Room { HotelId = 3, RoomType = RoomType.Suite, Price = 300, Availability = Availability.Available },
-            new Room { HotelId = 4, RoomType = RoomType.Single, Price = 100, Availability = Availability.Unavailable },
+            new Room { HotelId = 2, RoomType = RoomType.Deluxe, Price = 200, Availability = Availability.Unavailable, FolderPath = "SomeFolderPath" },
+            new Room { HotelId = 3, RoomType = RoomType.Suite, Price = 300, Availability = Availability.Available, FolderPath = "SomeFolderPath" },
+            new Room { HotelId = 4, RoomType = RoomType.Single, Price = 100, Availability = Availability.Unavailable, FolderPath = "SomeFolderPath" },
         };
 
         //Act
