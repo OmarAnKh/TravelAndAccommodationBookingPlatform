@@ -126,31 +126,35 @@ public class ReviewRepositoryTests : IDisposable
             Rating = rating
         };
 
-        // Act
-        var (entities, paginationMetaData) = await _reviewRepository.GetAllAsync(queryParams);
-        var resultList = entities.ToList();
-
-        var expected = _reviews.AsQueryable();
-
-        if (hotelId.HasValue)
-            expected = expected.Where(r => r.HotelId == hotelId.Value);
+        var expectedQuery = _reviews.AsQueryable();
 
         if (userId.HasValue)
-            expected = expected.Where(r => r.UserId == userId.Value);
+            expectedQuery = expectedQuery.Where(r => r.UserId == userId.Value);
+
+        if (hotelId.HasValue)
+            expectedQuery = expectedQuery.Where(r => r.HotelId == hotelId.Value);
 
         if (rating.HasValue)
-            expected = expected.Where(r => r.Rate == rating.Value);
+            expectedQuery = expectedQuery.Where(r => r.Rate >= rating.Value);
 
-        var expectedPaged = expected
+        var expectedTotalCount = expectedQuery.Count();
+
+        var expectedPaged = expectedQuery
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToList();
 
+        // Act
+        var (actualList, paginationMetaData) = await _reviewRepository.GetAllAsync(queryParams);
+
         // Assert
-        resultList.Count.Should().Be(expectedPaged.Count);
-        resultList.Should().BeEquivalentTo(expectedPaged);
+        actualList.Count().Should().Be(expectedPaged.Count);
+        actualList.Should().BeEquivalentTo(expectedPaged);
         paginationMetaData.CurrentPage.Should().Be(page);
+        paginationMetaData.TotalCount.Should().Be(expectedTotalCount);
+        paginationMetaData.PageSize.Should().Be(pageSize);
     }
+
 
     [Fact]
     public async Task GetAll_WithEmptyObject_ShouldUseDefaults()

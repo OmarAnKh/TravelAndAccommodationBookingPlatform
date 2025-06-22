@@ -60,41 +60,50 @@ public class LocationRepositoryTests : IDisposable
     [InlineData(5, null, null, 1, 10)]
     [InlineData(null, 41.3851f, 2.1734f, 1, 2)]
     [InlineData(null, null, null, 1, 10)]
-    public async Task GetAll_WithSearchTerm_ShouldReturnFilteredLocations(int hotelId, float latitude, float longitude, int pageNumber, int pageSize)
+    public async Task GetAll_WithSearchTerm_ShouldReturnFilteredLocations(int? hotelId, float? latitude, float? longitude, int pageNumber, int pageSize)
     {
-        //Arrange
+        // Arrange
         _context.Locations.AddRange(_locations);
         await _context.SaveChangesAsync();
+
         var queryParameters = new LocationQueryParameters
         {
             Page = pageNumber,
             PageSize = pageSize,
-            HotelId = hotelId,
-            Latitude = latitude,
-            Longitude = longitude
+            HotelId = hotelId ?? 0,
+            Latitude = latitude ?? 0,
+            Longitude = longitude ?? 0
         };
 
-        //Act
-        var (entities, paginationMetaData) = await _locationRepository.GetAllAsync(queryParameters);
-        var resultList = entities.ToList();
-        var queryableResult = _locations.AsQueryable();
+        var expectedQuery = _locations.AsQueryable();
 
-        queryableResult = queryableResult.Where(location => location.HotelId == hotelId);
+        if (hotelId.HasValue && hotelId.Value > 0)
+            expectedQuery = expectedQuery.Where(l => l.HotelId == hotelId.Value);
 
+        if (latitude.HasValue && Math.Abs(latitude.Value) > 0.00001)
+            expectedQuery = expectedQuery.Where(l => Math.Abs(l.Latitude - latitude.Value) < 0.0001);
 
-        queryableResult = queryableResult.Where(location => location.Latitude == latitude && location.Longitude == longitude);
+        if (longitude.HasValue && Math.Abs(longitude.Value) > 0.00001)
+            expectedQuery = expectedQuery.Where(l => Math.Abs(l.Longitude - longitude.Value) < 0.0001);
 
+        var expectedCount = expectedQuery.Count();
 
-        var listResult = queryableResult.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToList();
+        var expectedList = expectedQuery
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
 
+        // Act
+        var (actualList, paginationMetaData) = await _locationRepository.GetAllAsync(queryParameters);
 
-        //Assert
-        resultList.Count.Should().Be(listResult.Count());
-        resultList.Should().BeEquivalentTo(listResult);
+        // Assert
+        actualList.Count().Should().Be(expectedList.Count);
+        actualList.Should().BeEquivalentTo(expectedList);
         paginationMetaData.CurrentPage.Should().Be(pageNumber);
-
-
+        paginationMetaData.TotalCount.Should().Be(expectedCount);
+        paginationMetaData.PageSize.Should().Be(pageSize);
     }
+
     [Fact]
     public async Task GetAll_WithEmptyObject_ShouldUseDefaults()
     {

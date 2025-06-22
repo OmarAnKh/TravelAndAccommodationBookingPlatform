@@ -31,7 +31,7 @@ public class ReviewRepository : IReviewRepository
             query = query.Where(r => r.Rate >= queryParams.Rating);
         }
 
-        var totalItemCount = await _context.Reviews.CountAsync();
+        var totalItemCount = await query.CountAsync();
         var paginationMetaData = new PaginationMetaData(totalItemCount, queryParams.Page, queryParams.PageSize);
         var pagedList = await query.Skip(queryParams.PageSize * (queryParams.Page - 1)).Take(queryParams.PageSize).ToListAsync();
         return (pagedList, paginationMetaData);
