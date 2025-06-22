@@ -51,6 +51,12 @@ public class RoomService : IRoomService
         await _roomRepository.SaveChangesAsync();
         return _mapper.Map<RoomDto>(creationResult);
     }
+    public async Task<IEnumerable<RoomDto>> GetAvailableRoomsAsync(int hotelId)
+    {
+        var rooms = await _roomRepository.GetAvailableRoomsAsync(hotelId);
+        return _mapper.Map<IEnumerable<RoomDto>>(rooms);
+    }
+
     public async Task<RoomDto?> UpdateAsync(int id, JsonPatchDocument<RoomUpdateDto> patchDocument)
     {
         var room = await _roomRepository.GetByIdAsync(id);
@@ -86,5 +92,14 @@ public class RoomService : IRoomService
         }
         return _mapper.Map<RoomDto>(deletedRoom);
     }
-    public async Task<List<string>?> GetImagesPathAsync(int id) => throw new NotImplementedException();
+    public async Task<List<string>?> GetImagesPathAsync(int id)
+    {
+        var room = await _roomRepository.GetByIdAsync(id);
+        if (room is null)
+        {
+            return null;
+        }
+        var images = await _imageUploader.GetImageUrlsAsync(room.Thumbnail);
+        return images;
+    }
 }

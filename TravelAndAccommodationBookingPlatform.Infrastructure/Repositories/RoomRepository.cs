@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
+using TravelAndAccommodationBookingPlatform.Domain.Enums;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 
@@ -69,6 +70,14 @@ public class RoomRepository : IRoomRepository
     public async Task<int> SaveChangesAsync()
     {
         return await _context.SaveChangesAsync();
+    }
+    public async Task<IEnumerable<Room>> GetAvailableRoomsAsync(int hotelId)
+    {
+        var availableRooms = await _context.Rooms
+            .Where(room => room.HotelId == hotelId &&
+                           room.Availability == Availability.Available)
+            .ToListAsync();
+        return availableRooms;
     }
     public async Task<Room?> GetByIdAsync(int id)
     {

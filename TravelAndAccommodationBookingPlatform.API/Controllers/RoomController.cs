@@ -42,10 +42,10 @@ public class RoomController : ControllerBase
     {
         try
         {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             var (rooms, metaData) = await _roomService.GetAllAsync(roomQueryParameters);
             Response.Headers.Append("Room-Pagination", JsonSerializer.Serialize(metaData));
@@ -207,6 +207,36 @@ public class RoomController : ControllerBase
         {
             _logger.LogCritical(ex, "An unexpected error occurred while retrieving room images.");
             return StatusCode(500, "An unexpected error occurred while retrieving room images.");
+        }
+    }
+    /// <summary>
+    /// Retrieves available rooms for a specific hotel based on optional check-in/check-out dates and guest count.
+    /// </summary>
+    /// <param name="hotelId">The ID of the hotel.</param>
+    /// <returns>A list of available rooms that match the search criteria.</returns>
+    [HttpGet("available/hotel/{hotelId}")]
+    [ProducesResponseType(typeof(IEnumerable<RoomDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<RoomDto>>> GetAvailableRooms(int hotelId)
+    {
+        try
+        {
+
+            var availableRooms = await _roomService.GetAvailableRoomsAsync(hotelId);
+
+            if (!availableRooms.Any())
+            {
+                return NotFound("No available rooms found.");
+            }
+
+            return Ok(availableRooms);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogCritical(ex, "Unexpected error occurred while fetching available rooms.");
+            return StatusCode(500, "An unexpected error occurred.");
         }
     }
 }
