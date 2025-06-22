@@ -6,6 +6,7 @@ using TravelAndAccommodationBookingPlatform.Application.Interfaces;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
+using TravelAndAccommodationBookingPlatform.Domain.Enums;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 
 namespace TravelAndAccommodationBookingPlatform.Application.Services;
@@ -35,17 +36,18 @@ public class ReviewService : IReviewService
         return (reviews, paginationMetaData);
     }
 
-    public async Task<ReviewDto?> CreateAsync(ReviewCreationDto entity, IFormFile file)
+    public async Task<ReviewDto?> CreateAsync(ReviewCreationDto entity, List<IFormFile> file)
     {
         var user = await _userRepository.GetByIdAsync(entity.UserId);
         var hotel = await _hotelRepository.GetByIdAsync(entity.HotelId);
+        var folderPath = await _imageUploader.UploadImagesAsync(file, ImageEntityType.Reviews);
         if (hotel is null || user is null)
             return null;
 
         var review = _mapper.Map<Review>(entity);
         review.CreatedAt = DateTime.UtcNow;
         review.UpdatedAt = DateTime.UtcNow;
-
+        review.ImagePath = folderPath;
         var result = await _reviewRepository.CreateAsync(review);
         if (result is null)
             return null;
@@ -90,5 +92,14 @@ public class ReviewService : IReviewService
         await _reviewRepository.SaveChangesAsync();
         return _mapper.Map<ReviewDto>(review);
     }
-    public async Task<List<string>?> GetImagesPathAsync(int id) => throw new NotImplementedException();
+    public async Task<List<string>?> GetImagesPathAsync(int id)
+    {
+        var hotel = await _hotelRepository.GetByIdAsync(id);
+        if (hotel is null)
+        {
+            return null;
+        }
+        var images = await _imageUploader.GetImageUrlsAsync(hotel.Thumbnail);
+        return images;
+    }
 }

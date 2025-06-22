@@ -28,7 +28,7 @@ public class ReviewRepository : IReviewRepository
         }
         if (queryParams.Rating != null)
         {
-            query = query.Where(r => r.Rate == queryParams.Rating);
+            query = query.Where(r => r.Rate >= queryParams.Rating);
         }
 
         var totalItemCount = await _context.Reviews.CountAsync();

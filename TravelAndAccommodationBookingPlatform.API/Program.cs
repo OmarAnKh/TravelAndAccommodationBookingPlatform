@@ -13,6 +13,7 @@ using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Repositories;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Services;
+using ReviewService = TravelAndAccommodationBookingPlatform.Application.Services.ReviewService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +23,6 @@ DotNetEnv.Env.Load();
 // Add services to the container.
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddControllers().AddNewtonsoftJson();
-builder.Services.AddSwaggerGen();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
@@ -86,6 +86,9 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<ICityService, CityService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+
 builder.Services.AddDbContext<SqlServerDbContext>();
 
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(options =>
@@ -105,8 +108,12 @@ builder.Services.AddAuthentication("Bearer").AddJwtBearer(options =>
 });
 builder.Services.AddSwaggerGen(c =>
 {
+    // ✅ XML comments
+    var xmlCommentsFile = "TravelAndAccommodationBookingPlatform.xml";
+    var xmlCommentsFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
+    c.IncludeXmlComments(xmlCommentsFullPath);
 
-    // Add JWT Authentication scheme
+    // ✅ JWT Auth
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -128,18 +135,11 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] { }
+            Array.Empty<string>()
         }
     });
 });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(setupAction =>
-{
-    var xmlCommentsFile = "TravelAndAccommodationBookingPlatform.xml";
-    var xmlCommentsFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
-    setupAction.IncludeXmlComments(xmlCommentsFullPath);
-});
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("MustBeAnAdmin", policy =>
     {

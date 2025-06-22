@@ -8,6 +8,5 @@ public class ReviewCreationDto
     [Required] public int HotelId { get; set; }
     public string? Comment { get; set; }
     public float? Rate { get; set; }
-    public string? ImagePath { get; set; }
 
 }

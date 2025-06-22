@@ -190,7 +190,7 @@ public class HotelController : ControllerBase
     [HttpGet("api/hotels/{hotelId}/images")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetHotelImages(int hotelId)
+    public async Task<ActionResult> GetHotelImages(int hotelId)
     {
         try
         {
