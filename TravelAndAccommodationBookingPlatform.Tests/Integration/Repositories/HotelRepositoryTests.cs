@@ -16,11 +16,11 @@ public class HotelRepositoryTests : IDisposable
 
     readonly List<Hotel> _hotels = new List<Hotel>()
     {
-        new Hotel { Name = "Eiffel Hotel", CityId = 1, Owner = "Anan Khalili", Description = "Near Eiffel Tower", Thumbnail = "eiffel_hotel.jpg" },
-        new Hotel { Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg" },
-        new Hotel { Name = "Times Square Hotel", CityId = 3, Owner = "Ahmad", Description = "Close to Broadway", Thumbnail = "ts_hotel.jpg" },
-        new Hotel { Name = "Colosseum Suites", CityId = 4, Owner = "Rahaf", Description = "View of the Colosseum", Thumbnail = "colosseum.jpg" },
-        new Hotel { Name = "Sagrada Familia Hotel", CityId = 5, Owner = "YOU", Description = "Near Gaudi's masterpiece", Thumbnail = "sagrada.jpg" }
+        new Hotel { Name = "Eiffel Hotel", CityId = 1, Owner = "Anan Khalili", Description = "Near Eiffel Tower", FolderPath = "eiffel_hotel.jpg" },
+        new Hotel { Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", FolderPath = "shibuya_inn.jpg" },
+        new Hotel { Name = "Times Square Hotel", CityId = 3, Owner = "Ahmad", Description = "Close to Broadway", FolderPath = "ts_hotel.jpg" },
+        new Hotel { Name = "Colosseum Suites", CityId = 4, Owner = "Rahaf", Description = "View of the Colosseum", FolderPath = "colosseum.jpg" },
+        new Hotel { Name = "Sagrada Familia Hotel", CityId = 5, Owner = "YOU", Description = "Near Gaudi's masterpiece", FolderPath = "sagrada.jpg" }
     };
 
     public HotelRepositoryTests()
@@ -134,7 +134,7 @@ public class HotelRepositoryTests : IDisposable
     {
         //Arrange
 
-        var hotel = new Hotel { Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg" };
+        var hotel = new Hotel { Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", FolderPath = "shibuya_inn.jpg" };
 
         //Act
         var result = await _hotelRepository.CreateAsync(hotel);
@@ -171,7 +171,7 @@ public class HotelRepositoryTests : IDisposable
     public async Task Delete_WithInvalidHotel_ShouldReturnNull()
     {
         //Arrange
-        var hotel = new Hotel { Id = -1, Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg" };
+        var hotel = new Hotel { Id = -1, Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", FolderPath = "shibuya_inn.jpg" };
 
         //Act
         var deleteResult = await _hotelRepository.DeleteAsync(hotel.Id);
@@ -189,8 +189,8 @@ public class HotelRepositoryTests : IDisposable
         // Arrange
         var hotels = new List<Hotel>
         {
-            new Hotel { Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg" },
-            new Hotel { Name = "Times Square Hotel", CityId = 3, Owner = "Ahmad", Description = "Close to Broadway", Thumbnail = "ts_hotel.jpg" }
+            new Hotel { Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", FolderPath = "shibuya_inn.jpg" },
+            new Hotel { Name = "Times Square Hotel", CityId = 3, Owner = "Ahmad", Description = "Close to Broadway", FolderPath = "ts_hotel.jpg" }
         };
 
         await _context.Hotels.AddRangeAsync(hotels);

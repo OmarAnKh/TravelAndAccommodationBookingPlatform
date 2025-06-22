@@ -10,7 +10,7 @@ public class Room
     public RoomType RoomType { get; set; }
     public string? CustomRoomTypeName { get; set; }
     public float Price { get; set; }
-    public string? Thumbnail { get; set; }
+    public string FolderPath { get; set; }
     public string? Description { get; set; }
     public Availability Availability { get; set; }
     public int Adults { get; set; }

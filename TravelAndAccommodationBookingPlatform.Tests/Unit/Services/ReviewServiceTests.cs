@@ -89,7 +89,7 @@ public class ReviewServiceTests
             HotelId = 2,
             Comment = creationDto.Comment,
             Rate = creationDto.Rate,
-            ImagePath = imagePath,
+            FolderPath = imagePath,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };

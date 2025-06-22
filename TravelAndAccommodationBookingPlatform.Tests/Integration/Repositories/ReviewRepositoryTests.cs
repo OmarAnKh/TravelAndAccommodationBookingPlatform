@@ -29,7 +29,7 @@ public class ReviewRepositoryTests : IDisposable
             HotelId = 1,
             Comment = "Amazing service and beautiful view!",
             Rate = 4.8f,
-            ImagePath = "images/reviews/review1.jpg",
+            FolderPath = "images/reviews/review1.jpg",
             CreatedAt = new DateTime(2024, 12, 15),
             UpdatedAt = new DateTime(2024, 12, 15)
         },
@@ -40,7 +40,7 @@ public class ReviewRepositoryTests : IDisposable
             HotelId = 1,
             Comment = "Good location but noisy at night.",
             Rate = 3.5f,
-            ImagePath = "images/reviews/review2.jpg",
+            FolderPath = "images/reviews/review2.jpg",
             CreatedAt = new DateTime(2025, 1, 10),
             UpdatedAt = new DateTime(2025, 1, 10)
         },
@@ -51,7 +51,7 @@ public class ReviewRepositoryTests : IDisposable
             HotelId = 2,
             Comment = "Clean rooms and friendly staff.",
             Rate = 4.2f,
-            ImagePath = null,
+            FolderPath = null,
             CreatedAt = new DateTime(2025, 2, 20),
             UpdatedAt = new DateTime(2025, 2, 21)
         },
@@ -62,7 +62,7 @@ public class ReviewRepositoryTests : IDisposable
             HotelId = 2,
             Comment = "Mediocre experience overall.",
             Rate = 2.9f,
-            ImagePath = "images/reviews/review4.jpg",
+            FolderPath = "images/reviews/review4.jpg",
             CreatedAt = new DateTime(2025, 3, 5),
             UpdatedAt = new DateTime(2025, 3, 5)
         },
@@ -73,7 +73,7 @@ public class ReviewRepositoryTests : IDisposable
             HotelId = 3,
             Comment = "Best stay I’ve had in years!",
             Rate = 5.0f,
-            ImagePath = "images/reviews/review5.jpg",
+            FolderPath = "images/reviews/review5.jpg",
             CreatedAt = new DateTime(2025, 4, 18),
             UpdatedAt = new DateTime(2025, 4, 18)
         }
@@ -211,7 +211,7 @@ public class ReviewRepositoryTests : IDisposable
             HotelId = 2,
             Comment = "Mediocre experience overall.",
             Rate = 2.9f,
-            ImagePath = "images/reviews/review4.jpg",
+            FolderPath = "images/reviews/review4.jpg",
             CreatedAt = new DateTime(2025, 3, 5),
             UpdatedAt = new DateTime(2025, 3, 5)
         };
@@ -276,7 +276,7 @@ public class ReviewRepositoryTests : IDisposable
                 HotelId = 1,
                 Comment = "Good location but noisy at night.",
                 Rate = 3.5f,
-                ImagePath = "images/reviews/review2.jpg",
+                FolderPath = "images/reviews/review2.jpg",
                 CreatedAt = new DateTime(2025, 1, 10),
                 UpdatedAt = new DateTime(2025, 1, 10)
             },
@@ -287,7 +287,7 @@ public class ReviewRepositoryTests : IDisposable
                 HotelId = 2,
                 Comment = "Clean rooms and friendly staff.",
                 Rate = 4.2f,
-                ImagePath = null,
+                FolderPath = null,
                 CreatedAt = new DateTime(2025, 2, 20),
                 UpdatedAt = new DateTime(2025, 2, 21)
             }

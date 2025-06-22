@@ -42,7 +42,7 @@ public class RoomService : IRoomService
         var room = _mapper.Map<Room>(entity);
         room.CreatedAt = DateTime.UtcNow;
         room.UpdatedAt = DateTime.UtcNow;
-        hotel.Thumbnail = await _imageUploader.UploadImagesAsync(files, ImageEntityType.Rooms);
+        hotel.FolderPath = await _imageUploader.UploadImagesAsync(files, ImageEntityType.Rooms);
         var creationResult = await _roomRepository.CreateAsync(room);
         if (creationResult is null)
         {
@@ -99,7 +99,7 @@ public class RoomService : IRoomService
         {
             return null;
         }
-        var images = await _imageUploader.GetImageUrlsAsync(room.Thumbnail);
+        var images = await _imageUploader.GetImageUrlsAsync(room.FolderPath);
         return images;
     }
 }

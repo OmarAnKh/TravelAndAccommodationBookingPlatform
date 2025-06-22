@@ -157,7 +157,7 @@ public class RoomServiceTests
     [Fact]
     public async Task GetImagesPathAsync_ShouldReturnList_WhenRoomExists()
     {
-        var room = new Room { Id = 1, Thumbnail = "some-path" };
+        var room = new Room { Id = 1, FolderPath = "some-path" };
         var imageUrls = new List<string> { "url1", "url2" };
 
         _roomRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(room);

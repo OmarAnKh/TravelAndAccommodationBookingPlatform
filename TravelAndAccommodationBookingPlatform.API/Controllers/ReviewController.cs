@@ -73,11 +73,6 @@ public class ReviewController : ControllerBase
     {
         try
         {
-            if (files.Count == 0)
-            {
-                return BadRequest("At least one hotel thumbnail is required.");
-            }
-
             var createdReview = await _reviewService.CreateAsync(reviewDto, files);
             if (createdReview == null)
             {

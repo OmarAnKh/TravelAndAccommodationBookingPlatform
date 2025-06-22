@@ -39,7 +39,7 @@ public class CityService : ICityService
         var city = _mapper.Map<City>(entity);
         city.CreatedAt = DateTime.UtcNow;
         city.UpdatedAt = DateTime.UtcNow;
-        city.Thumbnail = imagePath;
+        city.FolderPath = imagePath;
         var creationResult = await _cityRepository.CreateAsync(city);
         if (creationResult == null)
         {
@@ -100,7 +100,7 @@ public class CityService : ICityService
         {
             return null;
         }
-        var images = await _imageUploader.GetImageUrlsAsync(city.Thumbnail);
+        var images = await _imageUploader.GetImageUrlsAsync(city.FolderPath);
         return images;
     }
 }

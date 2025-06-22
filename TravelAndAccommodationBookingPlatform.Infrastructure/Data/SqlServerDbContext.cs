@@ -72,6 +72,27 @@ public class SqlServerDbContext : DbContext, IAppDbContext
             .WithMany(r => r.Reservations)
             .HasForeignKey(r => r.RoomId);
 
+        //Indices
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Username);
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email);
+
+        modelBuilder.Entity<Hotel>()
+            .HasIndex(hotel => hotel.CityId);
+
+        modelBuilder.Entity<Room>()
+            .HasIndex(room => room.HotelId);
+
+        modelBuilder.Entity<Reservation>()
+            .HasIndex(reservation => reservation.UserId);
+        modelBuilder.Entity<Reservation>()
+            .HasIndex(reservation => reservation.RoomId);
+
+        modelBuilder.Entity<Review>()
+            .HasIndex(review => review.UserId);
+        modelBuilder.Entity<Review>()
+            .HasIndex(review => review.HotelId);
         // Seed data - only add if not in testing environment
         if (!Database.ProviderName.Contains("InMemory"))
         {
@@ -84,11 +105,11 @@ public class SqlServerDbContext : DbContext, IAppDbContext
         var baseDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         modelBuilder.Entity<City>().HasData(
-            new City { Id = 1, Name = "Paris", Country = "France", Thumbnail = "paris.jpg", PostOffice = "75000", CreatedAt = baseDate },
-            new City { Id = 2, Name = "Tokyo", Country = "Japan", Thumbnail = "tokyo.jpg", PostOffice = "100-0001", CreatedAt = baseDate },
-            new City { Id = 3, Name = "New York", Country = "USA", Thumbnail = "nyc.jpg", PostOffice = "10001", CreatedAt = baseDate },
-            new City { Id = 4, Name = "Rome", Country = "Italy", Thumbnail = "rome.jpg", PostOffice = "00100", CreatedAt = baseDate },
-            new City { Id = 5, Name = "Barcelona", Country = "Spain", Thumbnail = "barcelona.jpg", PostOffice = "08001", CreatedAt = baseDate }
+            new City { Id = 1, Name = "Paris", Country = "France", FolderPath = "paris.jpg", PostOffice = "75000", CreatedAt = baseDate },
+            new City { Id = 2, Name = "Tokyo", Country = "Japan", FolderPath = "tokyo.jpg", PostOffice = "100-0001", CreatedAt = baseDate },
+            new City { Id = 3, Name = "New York", Country = "USA", FolderPath = "nyc.jpg", PostOffice = "10001", CreatedAt = baseDate },
+            new City { Id = 4, Name = "Rome", Country = "Italy", FolderPath = "rome.jpg", PostOffice = "00100", CreatedAt = baseDate },
+            new City { Id = 5, Name = "Barcelona", Country = "Spain", FolderPath = "barcelona.jpg", PostOffice = "08001", CreatedAt = baseDate }
         );
 
         modelBuilder.Entity<Location>().HasData(
@@ -108,19 +129,19 @@ public class SqlServerDbContext : DbContext, IAppDbContext
         );
 
         modelBuilder.Entity<Hotel>().HasData(
-            new Hotel { Id = 1, Name = "Eiffel Hotel", CityId = 1, Owner = "Anan Khalili", Description = "Near Eiffel Tower", Thumbnail = "eiffel_hotel.jpg", CreatedAt = baseDate, UpdatedAt = baseDate },
-            new Hotel { Id = 2, Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", Thumbnail = "shibuya_inn.jpg", CreatedAt = baseDate, UpdatedAt = baseDate },
-            new Hotel { Id = 3, Name = "Times Square Hotel", CityId = 3, Owner = "Ahmad", Description = "Close to Broadway", Thumbnail = "ts_hotel.jpg", CreatedAt = baseDate, UpdatedAt = baseDate },
-            new Hotel { Id = 4, Name = "Colosseum Suites", CityId = 4, Owner = "Rahaf", Description = "View of the Colosseum", Thumbnail = "colosseum.jpg", CreatedAt = baseDate, UpdatedAt = baseDate },
-            new Hotel { Id = 5, Name = "Sagrada Familia Hotel", CityId = 5, Owner = "YOU", Description = "Near Gaudi's masterpiece", Thumbnail = "sagrada.jpg", CreatedAt = baseDate, UpdatedAt = baseDate }
+            new Hotel { Id = 1, Name = "Eiffel Hotel", CityId = 1, Owner = "Anan Khalili", Description = "Near Eiffel Tower", FolderPath = "eiffel_hotel.jpg", CreatedAt = baseDate, UpdatedAt = baseDate },
+            new Hotel { Id = 2, Name = "Shibuya Inn", CityId = 2, Owner = "Idk", Description = "In the heart of Tokyo", FolderPath = "shibuya_inn.jpg", CreatedAt = baseDate, UpdatedAt = baseDate },
+            new Hotel { Id = 3, Name = "Times Square Hotel", CityId = 3, Owner = "Ahmad", Description = "Close to Broadway", FolderPath = "ts_hotel.jpg", CreatedAt = baseDate, UpdatedAt = baseDate },
+            new Hotel { Id = 4, Name = "Colosseum Suites", CityId = 4, Owner = "Rahaf", Description = "View of the Colosseum", FolderPath = "colosseum.jpg", CreatedAt = baseDate, UpdatedAt = baseDate },
+            new Hotel { Id = 5, Name = "Sagrada Familia Hotel", CityId = 5, Owner = "YOU", Description = "Near Gaudi's masterpiece", FolderPath = "sagrada.jpg", CreatedAt = baseDate, UpdatedAt = baseDate }
         );
 
         modelBuilder.Entity<Room>().HasData(
-            new Room { Id = 1, HotelId = 1, RoomType = RoomType.Single, Price = 120, Availability = Availability.Available, CreatedAt = baseDate },
-            new Room { Id = 2, HotelId = 2, RoomType = RoomType.Deluxe, Price = 200, Availability = Availability.Unavailable, CreatedAt = baseDate },
-            new Room { Id = 3, HotelId = 3, RoomType = RoomType.Suite, Price = 300, Availability = Availability.Available, CreatedAt = baseDate },
-            new Room { Id = 4, HotelId = 4, RoomType = RoomType.Single, Price = 100, Availability = Availability.Unavailable, CreatedAt = baseDate },
-            new Room { Id = 5, HotelId = 5, RoomType = RoomType.Deluxe, Price = 180, Availability = Availability.Available, CreatedAt = baseDate }
+            new Room { Id = 1, HotelId = 1, RoomType = RoomType.Single, Price = 120, Availability = Availability.Available, CreatedAt = baseDate, FolderPath = "room_1" },
+            new Room { Id = 2, HotelId = 2, RoomType = RoomType.Deluxe, Price = 200, Availability = Availability.Unavailable, CreatedAt = baseDate, FolderPath = "room_2" },
+            new Room { Id = 3, HotelId = 3, RoomType = RoomType.Suite, Price = 300, Availability = Availability.Available, CreatedAt = baseDate, FolderPath = "room_3" },
+            new Room { Id = 4, HotelId = 4, RoomType = RoomType.Single, Price = 100, Availability = Availability.Unavailable, CreatedAt = baseDate, FolderPath = "room_4" },
+            new Room { Id = 5, HotelId = 5, RoomType = RoomType.Deluxe, Price = 180, Availability = Availability.Available, CreatedAt = baseDate, FolderPath = "room_5" }
         );
 
         modelBuilder.Entity<Review>().HasData(
@@ -130,7 +151,7 @@ public class SqlServerDbContext : DbContext, IAppDbContext
                 UserId = 1,
                 HotelId = 1,
                 Comment = "Amazing service and beautiful view!",
-                Rate = 4.8f, ImagePath = "images/reviews/review1.jpg",
+                Rate = 4.8f, FolderPath = "images/reviews/review1.jpg",
                 CreatedAt = new DateTime(2024, 12, 15),
                 UpdatedAt = new DateTime(2024, 12, 15)
             },
@@ -141,7 +162,7 @@ public class SqlServerDbContext : DbContext, IAppDbContext
                 HotelId = 1,
                 Comment = "Good location but noisy at night.",
                 Rate = 3.5f,
-                ImagePath = "images/reviews/review2.jpg",
+                FolderPath = "images/reviews/review2.jpg",
                 CreatedAt = new DateTime(2025, 1, 10),
                 UpdatedAt = new DateTime(2025, 1, 10)
             },
@@ -152,7 +173,7 @@ public class SqlServerDbContext : DbContext, IAppDbContext
                 HotelId = 2,
                 Comment = "Clean rooms and friendly staff.",
                 Rate = 4.2f,
-                ImagePath = null,
+                FolderPath = null,
                 CreatedAt = new DateTime(2025, 2, 20),
                 UpdatedAt = new DateTime(2025, 2, 21)
             },
@@ -163,7 +184,7 @@ public class SqlServerDbContext : DbContext, IAppDbContext
                 HotelId = 2,
                 Comment = "Mediocre experience overall.",
                 Rate = 2.9f,
-                ImagePath = "images/reviews/review4.jpg",
+                FolderPath = "images/reviews/review4.jpg",
                 CreatedAt = new DateTime(2025, 3, 5),
                 UpdatedAt = new DateTime(2025, 3, 5)
             },
@@ -174,7 +195,7 @@ public class SqlServerDbContext : DbContext, IAppDbContext
                 HotelId = 3,
                 Comment = "Best stay I’ve had in years!",
                 Rate = 5.0f,
-                ImagePath = "images/reviews/review5.jpg",
+                FolderPath = "images/reviews/review5.jpg",
                 CreatedAt = new DateTime(2025, 4, 18),
                 UpdatedAt = new DateTime(2025, 4, 18)
             }

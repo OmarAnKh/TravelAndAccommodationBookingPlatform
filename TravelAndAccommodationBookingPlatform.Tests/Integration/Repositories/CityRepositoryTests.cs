@@ -17,11 +17,11 @@ public class CityRepositoryTests : IDisposable
 
     readonly List<City> _cities = new List<City>
     {
-        new City { Name = "Paris", Country = "France", Thumbnail = "paris.jpg", PostOffice = "75000" },
-        new City { Name = "Tokyo", Country = "Japan", Thumbnail = "tokyo.jpg", PostOffice = "100-0001" },
-        new City { Name = "New York", Country = "USA", Thumbnail = "nyc.jpg", PostOffice = "10001" },
-        new City { Name = "Rome", Country = "Italy", Thumbnail = "rome.jpg", PostOffice = "00100" },
-        new City { Name = "Barcelona", Country = "Spain", Thumbnail = "barcelona.jpg", PostOffice = "08001" }
+        new City { Name = "Paris", Country = "France", FolderPath = "paris.jpg", PostOffice = "75000" },
+        new City { Name = "Tokyo", Country = "Japan", FolderPath = "tokyo.jpg", PostOffice = "100-0001" },
+        new City { Name = "New York", Country = "USA", FolderPath = "nyc.jpg", PostOffice = "10001" },
+        new City { Name = "Rome", Country = "Italy", FolderPath = "rome.jpg", PostOffice = "00100" },
+        new City { Name = "Barcelona", Country = "Spain", FolderPath = "barcelona.jpg", PostOffice = "08001" }
     };
 
     public CityRepositoryTests()
@@ -129,7 +129,7 @@ public class CityRepositoryTests : IDisposable
     public async Task Create_WithValidCity_ShouldAddCityToContext()
     {
         // Arrange
-        var city = new City { Name = "New City", Country = "New Country", Thumbnail = "New City.jpg", PostOffice = "75000" };
+        var city = new City { Name = "New City", Country = "New Country", FolderPath = "New City.jpg", PostOffice = "75000" };
 
         // Act
         var result = await _cityRepository.CreateAsync(city);
@@ -175,8 +175,8 @@ public class CityRepositoryTests : IDisposable
         // Arrange
         var cities = new List<City>
         {
-            new City { Name = "City1", Country = "Country1", Thumbnail = "paris.jpg", PostOffice = "75000" },
-            new City { Name = "City2", Country = "Country2", Thumbnail = "paris.jpg", PostOffice = "75000" }
+            new City { Name = "City1", Country = "Country1", FolderPath = "paris.jpg", PostOffice = "75000" },
+            new City { Name = "City2", Country = "Country2", FolderPath = "paris.jpg", PostOffice = "75000" }
         };
 
         await _context.Cities.AddRangeAsync(cities);

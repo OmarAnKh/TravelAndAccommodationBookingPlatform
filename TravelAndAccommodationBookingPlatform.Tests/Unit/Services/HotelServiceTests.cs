@@ -54,8 +54,8 @@ public class HotelServiceTests
         var queryParameter = new HotelQueryParameters();
         var hotels = new List<Hotel>()
         {
-            new Hotel { Id = firstHotelId, Name = firstHotelName, CityId = firstCityId, Owner = firstOwner, Description = firstDescription, Thumbnail = firstThumbnail },
-            new Hotel { Id = secondHotelId, Name = secondHotelName, CityId = secondCityId, Owner = secondOwner, Description = secondDescription, Thumbnail = secondThumbnail }
+            new Hotel { Id = firstHotelId, Name = firstHotelName, CityId = firstCityId, Owner = firstOwner, Description = firstDescription, FolderPath = firstThumbnail },
+            new Hotel { Id = secondHotelId, Name = secondHotelName, CityId = secondCityId, Owner = secondOwner, Description = secondDescription, FolderPath = secondThumbnail }
         };
         var hotelDto = new List<HotelDto>
         {
@@ -111,7 +111,7 @@ public class HotelServiceTests
             CityId = cityId,
             Owner = owner,
             Description = description,
-            Thumbnail = thumbnail
+            FolderPath = thumbnail
         };
 
         _mapperMock.Setup(m => m.Map<Hotel>(creationDto)).Returns(hotel);

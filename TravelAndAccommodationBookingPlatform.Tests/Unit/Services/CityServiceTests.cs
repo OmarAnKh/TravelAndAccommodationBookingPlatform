@@ -86,7 +86,7 @@ public class CityServiceTests
         {
             Id = expectedId,
             Name = cityName,
-            Thumbnail = city.Thumbnail,
+            FolderPath = city.FolderPath,
             Country = city.Country,
             PostOffice = city.PostOffice
         };
@@ -95,7 +95,7 @@ public class CityServiceTests
         {
             Id = expectedId,
             Name = cityName,
-            Thumbnail = created.Thumbnail,
+            Thumbnail = created.FolderPath,
             Country = created.Country,
             PostOffice = created.PostOffice
         };

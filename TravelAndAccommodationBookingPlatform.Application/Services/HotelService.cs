@@ -44,7 +44,7 @@ public class HotelService : IHotelService
         var hotel = _mapper.Map<Hotel>(entity);
         hotel.CreatedAt = DateTime.UtcNow;
         hotel.UpdatedAt = DateTime.UtcNow;
-        hotel.Thumbnail = imagesPath;
+        hotel.FolderPath = imagesPath;
 
         var createResult = await _hotelRepository.CreateAsync(hotel);
         if (createResult is null)
@@ -104,7 +104,7 @@ public class HotelService : IHotelService
         {
             return null;
         }
-        var images = await _imageUploader.GetImageUrlsAsync(hotel.Thumbnail);
+        var images = await _imageUploader.GetImageUrlsAsync(hotel.FolderPath);
         return images;
     }
 }

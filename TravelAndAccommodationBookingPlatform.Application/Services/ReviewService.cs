@@ -47,7 +47,7 @@ public class ReviewService : IReviewService
         var review = _mapper.Map<Review>(entity);
         review.CreatedAt = DateTime.UtcNow;
         review.UpdatedAt = DateTime.UtcNow;
-        review.ImagePath = folderPath;
+        review.FolderPath = folderPath;
         var result = await _reviewRepository.CreateAsync(review);
         if (result is null)
             return null;
@@ -99,7 +99,7 @@ public class ReviewService : IReviewService
         {
             return null;
         }
-        var images = await _imageUploader.GetImageUrlsAsync(hotel.Thumbnail);
+        var images = await _imageUploader.GetImageUrlsAsync(hotel.FolderPath);
         return images;
     }
 }
