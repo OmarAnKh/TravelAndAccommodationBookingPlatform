@@ -1,10 +1,12 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using TravelAndAccommodationBookingPlatform.Application.DTOs.Room;
 using TravelAndAccommodationBookingPlatform.Application.Interfaces;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
+using TravelAndAccommodationBookingPlatform.Domain.Enums;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 
 namespace TravelAndAccommodationBookingPlatform.Application.Services;
@@ -14,12 +16,14 @@ public class RoomService : IRoomService
 
     private readonly IRoomRepository _roomRepository;
     private readonly IHotelRepository _hotelRepository;
+    private readonly IImageUploader _imageUploader;
     private readonly IMapper _mapper;
 
-    public RoomService(IRoomRepository roomRepository, IHotelRepository hotelRepository, IMapper mapper)
+    public RoomService(IRoomRepository roomRepository, IHotelRepository hotelRepository, IImageUploader imageUploader, IMapper mapper)
     {
         _roomRepository = roomRepository;
         _hotelRepository = hotelRepository;
+        _imageUploader = imageUploader;
         _mapper = mapper;
     }
     public async Task<(IEnumerable<RoomDto>, PaginationMetaData)> GetAllAsync(RoomQueryParameters queryParams)
@@ -28,7 +32,7 @@ public class RoomService : IRoomService
         var rooms = _mapper.Map<IEnumerable<RoomDto>>(entities);
         return (rooms, paginationMetaData);
     }
-    public async Task<RoomDto?> CreateAsync(RoomCreationDto entity)
+    public async Task<RoomDto?> CreateAsync(RoomCreationDto entity, List<IFormFile> files)
     {
         var hotel = await _hotelRepository.GetByIdAsync(entity.HotelId);
         if (hotel is null)
@@ -38,11 +42,13 @@ public class RoomService : IRoomService
         var room = _mapper.Map<Room>(entity);
         room.CreatedAt = DateTime.UtcNow;
         room.UpdatedAt = DateTime.UtcNow;
+        hotel.Thumbnail = await _imageUploader.UploadImagesAsync(files, ImageEntityType.Rooms);
         var creationResult = await _roomRepository.CreateAsync(room);
         if (creationResult is null)
         {
             return null;
         }
+        await _roomRepository.SaveChangesAsync();
         return _mapper.Map<RoomDto>(creationResult);
     }
     public async Task<RoomDto?> UpdateAsync(int id, JsonPatchDocument<RoomUpdateDto> patchDocument)

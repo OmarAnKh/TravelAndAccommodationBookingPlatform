@@ -188,7 +188,7 @@ public class ReviewController : ControllerBase
     [HttpGet("api/review/{reviewId}/images")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> GetHotelImages(int reviewId)
+    public async Task<ActionResult> GetReviewImages(int reviewId)
     {
         try
         {

@@ -88,7 +88,7 @@ builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<ICityService, CityService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-
+builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddDbContext<SqlServerDbContext>();
 
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(options =>

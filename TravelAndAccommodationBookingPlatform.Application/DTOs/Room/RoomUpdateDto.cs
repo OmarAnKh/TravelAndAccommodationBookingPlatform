@@ -5,7 +5,6 @@ namespace TravelAndAccommodationBookingPlatform.Application.DTOs.Room;
 
 public class RoomUpdateDto
 {
-    [Required] public int RoomId { get; set; }
     public string? CustomRoomTypeName { get; set; }
     public float Price { get; set; }
     public string? Description { get; set; }
