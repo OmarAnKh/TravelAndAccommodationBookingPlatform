@@ -301,4 +301,61 @@ public class UserController : ControllerBase
         return principal;
     }
 
+
+    /// <summary>
+    /// Logs out the user by revoking the provided refresh token.
+    /// </summary>
+    /// <param name="token">The refresh token to revoke.</param>
+    /// <returns></returns>
+    [HttpPost("Logout")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult> Logout(string token)
+    {
+        try
+        {
+            var existingToken = await _refreshTokenService.GetValidTokenAsync(token);
+            if (existingToken == null)
+                return Unauthorized("Invalid refresh token");
+
+            await _refreshTokenService.RevokeTokenAsync(token);
+            return NoContent();
+        }
+        catch (Exception e)
+        {
+
+            _logger.LogCritical(e, "Unexpected error occurred while logging out");
+            return StatusCode(500, "Unexpected error occurred.");
+        }
+
+    }
+
+    /// <summary>
+    /// Logs out the user from all devices by revoking all refresh tokens.
+    /// </summary>
+    /// <returns></returns>
+    [HttpPost("LogoutAll")]
+    [Authorize] // Ensure access token is required
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult> LogoutAll()
+    {
+        try
+        {
+            var userId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+            if (userId == 0)
+                return Unauthorized("Invalid user ID");
+
+            await _refreshTokenService.RevokeAllTokensForUserAsync(userId);
+            return NoContent();
+
+
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Unexpected error occurred while logging out");
+            return StatusCode(500, "Unexpected error occurred.");
+        }
+    }
+
 }

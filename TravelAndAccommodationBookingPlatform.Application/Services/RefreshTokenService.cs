@@ -32,4 +32,8 @@ public class RefreshTokenService : IRefreshTokenService
     {
         await _tokenRepository.RevokeTokenAsync(token);
     }
+    public async Task RevokeAllTokensForUserAsync(int userId)
+    {
+        await _tokenRepository.RevokeAllTokensAsync(userId);
+    }
 }
