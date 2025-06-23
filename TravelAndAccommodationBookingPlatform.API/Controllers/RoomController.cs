@@ -54,7 +54,7 @@ public class RoomController : ControllerBase
         catch (Exception e)
         {
             _logger.LogCritical(e, "Unexpected error occurred while getting all rooms.");
-            return StatusCode(500);
+            return StatusCode(500, "An unexpected error occurred.");
         }
     }
 
@@ -93,7 +93,7 @@ public class RoomController : ControllerBase
         catch (Exception e)
         {
             _logger.LogCritical(e, "Unexpected error occurred while creating room.");
-            return StatusCode(500);
+            return StatusCode(500, "An unexpected error occurred.");
         }
     }
 
@@ -121,7 +121,7 @@ public class RoomController : ControllerBase
         catch (Exception e)
         {
             _logger.LogCritical(e, "Unexpected error occurred while getting room.");
-            return StatusCode(500);
+            return StatusCode(500, "An unexpected error occurred.");
         }
     }
 
@@ -153,7 +153,7 @@ public class RoomController : ControllerBase
         catch (Exception e)
         {
             _logger.LogCritical(e, "Unexpected error occurred while updating room.");
-            return StatusCode(500);
+            return StatusCode(500, "An unexpected error occurred.");
         }
     }
 
@@ -183,7 +183,7 @@ public class RoomController : ControllerBase
         catch (Exception e)
         {
             _logger.LogCritical(e, "Unexpected error occurred while deleting room.");
-            return StatusCode(500);
+            return StatusCode(500500, "An unexpected error occurred.");
         }
     }
 

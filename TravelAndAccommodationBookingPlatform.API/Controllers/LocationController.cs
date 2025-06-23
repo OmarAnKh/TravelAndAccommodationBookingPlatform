@@ -78,8 +78,8 @@ public class LocationController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Failed to create location.");
-            return StatusCode(500, "Failed to create hotel.");
+            _logger.LogCritical(e, "Unexpected error occured while adding new location.");
+            return StatusCode(500, "An Unexpected error occured.");
         }
 
     }
@@ -105,7 +105,7 @@ public class LocationController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Failed to get location.");
+            _logger.LogCritical(e, "Unexpected error occured while getting location.");
             return StatusCode(500, "An unexpected error occurred.");
         }
     }
@@ -130,13 +130,13 @@ public class LocationController : ControllerBase
             var updatedLocation = await _locationService.UpdateAsync(locationId, locationDto);
             if (updatedLocation is null)
             {
-                return NotFound();
+                return BadRequest();
             }
             return Ok(updatedLocation);
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Failed to update location.");
+            _logger.LogCritical(e, "Unexpected error occured while patching location.");
             return StatusCode(500, "An unexpected error occurred.");
         }
     }
@@ -164,7 +164,7 @@ public class LocationController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Failed to delete location.");
+            _logger.LogCritical(e, "Unexpected error occured while deleting location.");
             return StatusCode(500, "An unexpected error occurred.");
         }
 

@@ -79,19 +79,23 @@ public class CityController : ControllerBase
         try
         {
             if (files.Count == 0)
+            {
                 return BadRequest("At least one hotel thumbnail is required.");
+            }
 
             var createdHotel = await _cityService.CreateAsync(cityDto, files);
 
             if (createdHotel == null)
+            {
                 return StatusCode(409, "Failed to create hotel.");
+            }
 
             return CreatedAtAction(nameof(GetCityById), new { id = createdHotel.Id }, createdHotel);
         }
         catch (Exception e)
         {
 
-            _logger.LogCritical(e, "Failed to create city.");
+            _logger.LogCritical(e, "Unexpected error occured while creating city.");
             return StatusCode(500, "An unexpected error occurred.");
         }
 
@@ -113,7 +117,7 @@ public class CityController : ControllerBase
             var city = await _cityService.GetByIdAsync(id);
             if (city is null)
             {
-                _logger.LogCritical("Reservation not found.");
+                _logger.LogWarning("Reservation not found.");
                 return NotFound();
             }
             return Ok(city);
@@ -121,7 +125,7 @@ public class CityController : ControllerBase
         catch (Exception e)
         {
 
-            _logger.LogCritical(e, "Failed to retrieve city.");
+            _logger.LogCritical(e, "Unexpected error occured while getting city.");
             return StatusCode(500, "An unexpected error occurred.");
         }
 
@@ -146,7 +150,7 @@ public class CityController : ControllerBase
             var updatedCity = await _cityService.UpdateAsync(id, patchDocument);
             if (updatedCity is null)
             {
-                _logger.LogCritical("Reservation not found.");
+                _logger.LogWarning("Reservation not found.");
                 return BadRequest();
             }
             return Ok(updatedCity);
@@ -154,7 +158,7 @@ public class CityController : ControllerBase
         catch (Exception e)
         {
 
-            _logger.LogCritical(e, "Failed to update city.");
+            _logger.LogCritical(e, "Unexpected error occured while updating city.");
             return StatusCode(500, "An unexpected error occurred.");
         }
 
@@ -178,7 +182,7 @@ public class CityController : ControllerBase
             var deletedCity = await _cityService.DeleteAsync(id);
             if (deletedCity is null)
             {
-                _logger.LogCritical("Reservation not found.");
+                _logger.LogWarning("Reservation not found.");
                 return BadRequest();
             }
             return Ok(deletedCity);
@@ -186,7 +190,7 @@ public class CityController : ControllerBase
         catch (Exception e)
         {
 
-            _logger.LogCritical(e, "Failed to delete city.");
+            _logger.LogCritical(e, "Unexpected error occured while deleting city. .");
             return StatusCode(500, "An unexpected error occurred.");
         }
 
@@ -211,7 +215,7 @@ public class CityController : ControllerBase
         catch (Exception e)
         {
 
-            _logger.LogCritical(e, "Failed to retrieve hotel images.");
+            _logger.LogCritical(e, "Unexpected error occured while getting hotel images.");
             return StatusCode(500, "An unexpected error occurred.");
         }
 

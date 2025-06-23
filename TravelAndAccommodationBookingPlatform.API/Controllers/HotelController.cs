@@ -53,7 +53,7 @@ public class HotelController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogCritical(ex, "Failed to retrieve hotels.");
+            _logger.LogCritical(ex, "Unexpected error occured while getting hotels.");
             return StatusCode(500, "An unexpected error occurred while retrieving hotels.");
         }
     }
@@ -63,7 +63,7 @@ public class HotelController : ControllerBase
     /// </summary>
     /// <param name="hotelDto">The hotel creation data.</param>
     /// <param name="thumbnails">List of image files to use as hotel thumbnails (at least one is required).</param>
-    /// <returns>The created hotel.</returns>
+    /// <returns>The created hotel if succeed.</returns>
     [Authorize(Policy = "MustBeAnAdmin")]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -83,13 +83,13 @@ public class HotelController : ControllerBase
 
             if (createdHotel == null)
             {
-                return StatusCode(500, "Failed to create hotel.");
+                return BadRequest();
             }
             return CreatedAtAction(nameof(GetHotelById), new { id = createdHotel.Id }, createdHotel);
         }
         catch (Exception ex)
         {
-            _logger.LogCritical(ex, "Failed to create a new hotel.");
+            _logger.LogCritical(ex, "Unexpected error occured while creating hotel.");
             return StatusCode(500, "An unexpected error occurred while creating the hotel.");
         }
     }
@@ -116,7 +116,7 @@ public class HotelController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogCritical(ex, $"Failed to get hotel with ID {id}.");
+            _logger.LogCritical(ex, "Unexpected error occured while getting hotel.");
             return StatusCode(500, "An unexpected error occurred while retrieving the hotel.");
         }
     }
@@ -140,14 +140,14 @@ public class HotelController : ControllerBase
             var updatedHotel = await _hotelService.UpdateAsync(hotelId, hotelDto);
             if (updatedHotel == null)
             {
-                return NotFound();
+                return BadRequest();
             }
 
             return Ok(updatedHotel);
         }
         catch (Exception ex)
         {
-            _logger.LogCritical(ex, $"Failed to patch hotel with ID {hotelId}.");
+            _logger.LogCritical(ex, "Unexpected error occured while updating the hotel.");
             return StatusCode(500, "An unexpected error occurred while updating the hotel.");
         }
     }
@@ -170,14 +170,14 @@ public class HotelController : ControllerBase
             var deletedHotel = await _hotelService.DeleteAsync(id);
             if (deletedHotel == null)
             {
-                return NotFound();
+                return BadRequest();
             }
 
             return Ok(deletedHotel);
         }
         catch (Exception ex)
         {
-            _logger.LogCritical(ex, $"Failed to delete hotel with ID {id}.");
+            _logger.LogCritical(ex, "Unexpected error occured while deleting the hotel.");
             return StatusCode(500, "An unexpected error occurred while deleting the hotel.");
         }
     }
@@ -199,7 +199,7 @@ public class HotelController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogCritical(ex, $"Failed to get images for hotel with ID {hotelId}.");
+            _logger.LogCritical(ex, "Unexpected error occurred while getting hotel images for hotel.");
             return StatusCode(500, "An unexpected error occurred while retrieving hotel images.");
         }
     }

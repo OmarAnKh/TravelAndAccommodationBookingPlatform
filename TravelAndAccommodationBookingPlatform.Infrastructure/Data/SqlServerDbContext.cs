@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
 using TravelAndAccommodationBookingPlatform.Domain.Enums;
-using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 
 namespace TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 
@@ -22,6 +21,8 @@ public class SqlServerDbContext : DbContext, IAppDbContext
     public virtual DbSet<Reservation> Reservations { get; set; }
     public virtual DbSet<Review> Reviews { get; set; }
     public virtual DbSet<User> Users { get; set; }
+
+    public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -93,6 +94,12 @@ public class SqlServerDbContext : DbContext, IAppDbContext
             .HasIndex(review => review.UserId);
         modelBuilder.Entity<Review>()
             .HasIndex(review => review.HotelId);
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasIndex(refreshToken => refreshToken.UserId);
+        modelBuilder.Entity<RefreshToken>()
+            .HasIndex(refreshToken => refreshToken.Token);
+
         // Seed data - only add if not in testing environment
         if (!Database.ProviderName.Contains("InMemory"))
         {

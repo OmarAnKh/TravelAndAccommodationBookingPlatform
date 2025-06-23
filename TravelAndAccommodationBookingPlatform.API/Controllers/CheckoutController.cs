@@ -19,6 +19,7 @@ public class CheckoutController : ControllerBase
     /// Initializes a new instance of the <see cref="CheckoutController"/> class.
     /// </summary>
     /// <param name="paymentService">Service responsible for handling payment logic.</param>
+    /// <param name="logger"></param>
     public CheckoutController(IPaymentService paymentService, ILogger<CheckoutController> logger)
     {
         _paymentService = paymentService;
@@ -53,7 +54,7 @@ public class CheckoutController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e.Message);
+            _logger.LogCritical(e, "Unexpected error occured while creating payment intent");
             return StatusCode(500, "An unexpected error occurred.");
         }
 
@@ -101,7 +102,7 @@ public class CheckoutController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e.Message);
+            _logger.LogCritical(e, "Unexpected error occured while stripe webhook");
             return StatusCode(500, "An unexpected error occurred.");
         }
 

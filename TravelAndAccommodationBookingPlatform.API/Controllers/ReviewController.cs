@@ -53,8 +53,8 @@ public class ReviewController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Fail to get reviews.");
-            return StatusCode(500);
+            _logger.LogCritical(e, "Unexpected error occured while getting reviews.");
+            return StatusCode(500, "An unexpected error occurred.");
         }
     }
 
@@ -76,15 +76,15 @@ public class ReviewController : ControllerBase
             var createdReview = await _reviewService.CreateAsync(reviewDto, files);
             if (createdReview == null)
             {
-                return StatusCode(500, "Failed to create review.");
+                return BadRequest();
             }
 
             return CreatedAtAction(nameof(GetReviewById), new { id = createdReview.Id }, createdReview);
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Fail to create review.");
-            return StatusCode(500);
+            _logger.LogCritical(e, "Unexpected error occured while Create review.");
+            return StatusCode(500, "An unexpected error occurred.");
         }
     }
 
@@ -111,8 +111,8 @@ public class ReviewController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Fail to get review.");
-            return StatusCode(500);
+            _logger.LogCritical(e, "Unexpected error occured while getting review.");
+            return StatusCode(500, "An unexpected error occurred.");
         }
     }
 
@@ -134,15 +134,15 @@ public class ReviewController : ControllerBase
             var updatedReview = await _reviewService.UpdateAsync(reviewId, reviewDto);
             if (updatedReview is null)
             {
-                return NotFound("Review not found.");
+                return BadRequest();
             }
 
             return Ok(updatedReview);
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Fail to update review.");
-            return StatusCode(500);
+            _logger.LogCritical(e, "Unexpected error occured while update review.");
+            return StatusCode(500, "An unexpected error occurred.");
         }
     }
 
@@ -163,15 +163,15 @@ public class ReviewController : ControllerBase
             var deletedReview = await _reviewService.DeleteAsync(reviewId);
             if (deletedReview is null)
             {
-                return NotFound("Review not found.");
+                return BadRequest();
             }
 
             return Ok(deletedReview);
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Fail to delete review.");
-            return StatusCode(500);
+            _logger.LogCritical(e, "Unexpected error occured while deleting review.");
+            return StatusCode(500, "An unexpected error occurred.");
         }
     }
 
@@ -192,7 +192,7 @@ public class ReviewController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogCritical(ex, $"Failed to get images for review with ID {reviewId}.");
+            _logger.LogCritical(ex, "Unexpected error occured while getting review images.");
             return StatusCode(500, "An unexpected error occurred while retrieving review images.");
         }
     }

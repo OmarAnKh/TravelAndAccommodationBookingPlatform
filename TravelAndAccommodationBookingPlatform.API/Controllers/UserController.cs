@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using TravelAndAccommodationBookingPlatform.API.Common.Interfaces;
+using TravelAndAccommodationBookingPlatform.Application.DTOs.RefreshToken;
 using TravelAndAccommodationBookingPlatform.Application.DTOs.User;
 using TravelAndAccommodationBookingPlatform.Application.Interfaces;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
+using TravelAndAccommodationBookingPlatform.Domain.Entities;
 
 namespace TravelAndAccommodationBookingPlatform.API.Controllers;
 
@@ -22,6 +24,7 @@ public class UserController : ControllerBase
 {
 
     private readonly IUserService _userService;
+    private readonly IRefreshTokenService _refreshTokenService;
     private readonly string _secretKey;
     private readonly string _issuer;
     private readonly string _audience;
@@ -33,16 +36,18 @@ public class UserController : ControllerBase
     /// <param name="userService">The user service for managing users.</param>
     /// <param name="jwtProvider">Provides JWT configuration for token generation.</param>
     /// <param name="logger">Logger for User controller.</param>
+    /// <param name="refreshTokenService">Refresh token for user controller</param>
     public UserController(
         IUserService userService,
         IJwtProvider jwtProvider
-        , ILogger<UserController> logger)
+        , ILogger<UserController> logger, IRefreshTokenService refreshTokenService)
     {
         _userService = userService;
         _secretKey = jwtProvider.SecretKey;
         _issuer = jwtProvider.Issuer;
         _audience = jwtProvider.Audience;
         _logger = logger;
+        _refreshTokenService = refreshTokenService;
 
     }
 
@@ -69,8 +74,8 @@ public class UserController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Failed to get users");
-            return StatusCode(500, "Internal server error");
+            _logger.LogCritical(e, "Unexpected error occurred while getting users.");
+            return StatusCode(500, "An unexpected error occurred.");
         }
 
     }
@@ -96,8 +101,8 @@ public class UserController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Failed to get user");
-            return StatusCode(500, "Internal server error");
+            _logger.LogCritical(e, "Unexpected error occurred while getting user.");
+            return StatusCode(500, "An Unexpected error occurred.");
         }
 
     }
@@ -123,8 +128,8 @@ public class UserController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Failed to create user");
-            return StatusCode(500, "Internal server error");
+            _logger.LogCritical(e, "Unexpected error occurred while posting user.");
+            return StatusCode(500, "An Unexpected error occurred.");
         }
 
     }
@@ -153,54 +158,147 @@ public class UserController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Failed to update user");
-            return StatusCode(500, "Internal server error");
+            _logger.LogCritical(e, "Unexpected error occurred while updating user.");
+            return StatusCode(500, "An Unexpected error occurred.");
         }
 
     }
 
     /// <summary>
-    /// Authenticates a user and returns a JWT token if credentials are valid.
+    /// Authenticates a user and returns JWT access & refresh tokens if credentials are valid.
     /// </summary>
-    /// <param name="email">The email address of the user.</param>
-    /// <param name="password">The user's password.</param>
-    /// <returns>A JWT token if authentication succeeds; otherwise, a 401 Unauthorized response.</returns>
     [HttpPost("Login")]
-    public async Task<ActionResult<string>> Login(string email, string password)
+    public async Task<ActionResult<object>> Login(string email, string password)
     {
         try
         {
             var user = await _userService.ValidateCredentialsAsync(email, password);
             if (user == null)
-            {
                 return Unauthorized("Invalid credentials");
-            }
 
-            var key = new SymmetricSecurityKey(Convert.FromBase64String(_secretKey));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var claims = new List<Claim>
+            var accessToken = GenerateAccessToken(user);
+            var refreshToken = new RefreshToken
             {
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim("UserId", user.Id.ToString()),
-                new Claim("Email", user.Email),
-                new Claim("Role", user.Role.ToString()),
+                Token = Guid.NewGuid().ToString(),
+                UserId = user.Id,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(7)
             };
 
-            var token = new JwtSecurityToken(
-                issuer: _issuer,
-                audience: _audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: credentials
-            );
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-            return Ok(tokenString);
+            await _refreshTokenService.CreateTokenAsync(refreshToken);
+
+            return Ok(new
+            {
+                accessToken,
+                refreshToken = refreshToken.Token
+            });
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Failed to login");
-            return StatusCode(500, "Internal server error");
+            _logger.LogCritical(e, "Unexpected error occurred while logging in.");
+            return StatusCode(500, "An Unexpected error occurred.");
+        }
+    }
+
+    /// <summary>
+    /// Refreshes the access token using a valid refresh token.
+    /// </summary>
+    /// <param name="request">Contains expired access token and refresh token.</param>
+    /// <returns>New access and refresh tokens if successful.</returns>
+    [HttpPost("RefreshToken")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<object>> RefreshToken([FromBody] TokenRefreshRequest request)
+    {
+        try
+        {
+            var principal = GetPrincipalFromExpiredToken(request.AccessToken);
+            var userId = int.Parse(principal.FindFirst("UserId")?.Value ?? "0");
+
+            var existingToken = await _refreshTokenService.GetValidTokenAsync(request.RefreshToken);
+            if (existingToken == null || existingToken.UserId != userId)
+            {
+                return Unauthorized("Invalid refresh token");
+            }
+
+            var user = await _userService.GetByIdAsync(userId);
+            var newAccessToken = GenerateAccessToken(user!);
+
+            var newRefreshToken = new RefreshToken
+            {
+                Token = Guid.NewGuid().ToString(),
+                UserId = userId,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(7)
+            };
+
+            await _refreshTokenService.RevokeTokenAsync(existingToken.Token);
+            await _refreshTokenService.CreateTokenAsync(newRefreshToken);
+
+            return Ok(new
+            {
+                accessToken = newAccessToken,
+                refreshToken = newRefreshToken.Token
+            });
+        }
+        catch (SecurityTokenException)
+        {
+            return Unauthorized("Invalid access token");
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Unexpected error occurred while refreshing token.");
+            return StatusCode(500, "An Unexpected error occurred.");
+        }
+    }
+
+    private string GenerateAccessToken(UserDto user)
+    {
+        var key = new SymmetricSecurityKey(Convert.FromBase64String(_secretKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim("UserId", user.Id.ToString()),
+            new Claim("Email", user.Email),
+            new Claim("Role", user.Role.ToString()),
+        };
+
+        var token = new JwtSecurityToken(
+            issuer: _issuer,
+            audience: _audience,
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(15),
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+    {
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = false,
+            ValidIssuer = _issuer,
+            ValidAudience = _audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(_secretKey))
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+
+        if (securityToken is not JwtSecurityToken jwtToken ||
+            !jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+        {
+            throw new SecurityTokenException("Invalid token");
         }
 
+        return principal;
     }
+
 }
