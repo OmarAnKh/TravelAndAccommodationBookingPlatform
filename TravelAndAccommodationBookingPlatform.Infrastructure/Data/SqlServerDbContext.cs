@@ -10,9 +10,6 @@ public class SqlServerDbContext : DbContext, IAppDbContext
     {
     }
 
-    public SqlServerDbContext()
-    {
-    }
 
     public virtual DbSet<City> Cities { get; set; }
     public virtual DbSet<Location> Locations { get; set; }
@@ -23,15 +20,6 @@ public class SqlServerDbContext : DbContext, IAppDbContext
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-            DotNetEnv.Env.Load();
-            optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("SQLSERVERCONNECTIONSTRING"));
-        }
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -100,7 +88,6 @@ public class SqlServerDbContext : DbContext, IAppDbContext
         modelBuilder.Entity<RefreshToken>()
             .HasIndex(refreshToken => refreshToken.Token);
 
-        // Seed data - only add if not in testing environment
         if (!Database.ProviderName.Contains("InMemory"))
         {
             SeedData(modelBuilder);

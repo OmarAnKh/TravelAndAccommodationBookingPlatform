@@ -2,6 +2,7 @@ using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Stripe;
@@ -45,6 +46,10 @@ string audience = Environment.GetEnvironmentVariable("JWTAUDIENCE")
 string secretKey = Environment.GetEnvironmentVariable("JWTSECRETKEY")
                    ?? throw new InvalidOperationException("Missing environment variable: SECRETKEY");
 
+string sqlConnectionString = Environment.GetEnvironmentVariable("SQLSERVERCONNECTIONSTRING")
+                             ?? throw new InvalidOperationException("Missing environment variable: SQLSERVERCONNECTIONSTRING");
+
+
 StripeConfiguration.ApiKey = Environment.GetEnvironmentVariable("STRIPESECRETKEY")
                              ?? throw new InvalidOperationException("Missing environment variable: STRIPESECRETKEY");
 
@@ -80,7 +85,7 @@ builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
-builder.Services.AddDbContext<SqlServerDbContext>();
+builder.Services.AddDbContext<SqlServerDbContext>(options => { options.UseSqlServer(sqlConnectionString); });
 
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(options =>
 {
