@@ -17,16 +17,13 @@ using ReviewService = TravelAndAccommodationBookingPlatform.Application.Services
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load environment variables
 DotNetEnv.Env.Load();
 
-// Add services to the container.
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
-// AWS Configuration - Remove hardcoded credentials
 string awsAccessKey = Environment.GetEnvironmentVariable("AWSACCESSKEYID")
                       ?? throw new InvalidOperationException("Missing environment variable: AWSACCESSKEYID");
 
@@ -64,15 +61,7 @@ builder.Services.AddScoped<IImageUploader>(sp =>
     var s3Client = sp.GetRequiredService<IAmazonS3>();
     return new S3ImageUploader(s3Client, bucketName);
 });
-builder.Services.AddSingleton<IJwtProvider>(sp =>
-{
-    var config = sp.GetRequiredService<IConfiguration>();
-    var SecretKey = secretKey;
-    var Issuer = issuer;
-    var Audience = audience;
-
-    return new JwtProvider(secretKey, issuer, audience);
-});
+builder.Services.AddSingleton<IJwtProvider>(new JwtProvider(secretKey, issuer, audience));
 builder.Services.AddScoped<IHotelService, HotelService>();
 builder.Services.AddScoped<IHotelRepository, HotelRepository>();
 builder.Services.AddScoped<ICityRepository, CityRepository>();
@@ -110,12 +99,10 @@ builder.Services.AddAuthentication("Bearer").AddJwtBearer(options =>
 });
 builder.Services.AddSwaggerGen(c =>
 {
-    // ✅ XML comments
     var xmlCommentsFile = "TravelAndAccommodationBookingPlatform.xml";
     var xmlCommentsFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
     c.IncludeXmlComments(xmlCommentsFullPath);
 
-    // ✅ JWT Auth
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",

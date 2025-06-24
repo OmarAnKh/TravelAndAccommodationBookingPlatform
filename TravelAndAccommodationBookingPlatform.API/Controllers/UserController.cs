@@ -168,11 +168,11 @@ public class UserController : ControllerBase
     /// Authenticates a user and returns JWT access & refresh tokens if credentials are valid.
     /// </summary>
     [HttpPost("Login")]
-    public async Task<ActionResult<object>> Login(string email, string password)
+    public async Task<ActionResult<object>> Login(string username, string password)
     {
         try
         {
-            var user = await _userService.ValidateCredentialsAsync(email, password);
+            var user = await _userService.ValidateCredentialsAsync(username, password);
             if (user == null)
                 return Unauthorized("Invalid credentials");
 
