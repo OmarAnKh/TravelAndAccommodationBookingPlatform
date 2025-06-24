@@ -7,10 +7,25 @@ on:
 
 env:
   DOTNET_VERSION: '8.0.100'
+  
 
 jobs:
   migrate-database:
     runs-on: ubuntu-latest
+
+    env:
+      SQLSERVERCONNECTIONSTRING: ${{ secrets.SQLSERVERCONNECTIONSTRING }}
+      JWTSECRETKEY: ${{ secrets.JWTSECRETKEY }}
+      JWTISSUER: ${{ secrets.JWTISSUER }}
+      JWTAUDIENCE: ${{ secrets.JWTAUDIENCE }}
+      AWSBUCKETNAME: ${{ secrets.AWSBUCKETNAME }}
+      AWSACCESSKEYID: ${{ secrets.AWSACCESSKEYID }}
+      AWSSECRETACCESSKEY: ${{ secrets.AWSSECRETACCESSKEY }}
+      AWSREGION: ${{ secrets.AWSREGION }}
+      STRIPESECRETKEY: ${{ secrets.STRIPESECRETKEY }}
+      WEBHOOKSECRET: ${{ secrets.WEBHOOKSECRET }}
+      ASPNETCORE_ENVIRONMENT: ${{ secrets.ASPNETCORE_ENVIRONMENT }}
+      DOTNET_RUNNING_IN_CONTAINER: ${{ secrets.DOTNET_RUNNING_IN_CONTAINER }}
 
     steps:
     - name: Checkout code
@@ -38,6 +53,5 @@ jobs:
         CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
       run: |
         dotnet ef database update \
-          --startup-project ./TravelAndAccommodationBookingPlatform.API \
           --project ./TravelAndAccommodationBookingPlatform.Infrastructure \
           --connection "$CONNECTION_STRING"
