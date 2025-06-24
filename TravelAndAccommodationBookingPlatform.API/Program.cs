@@ -18,8 +18,10 @@ using ReviewService = TravelAndAccommodationBookingPlatform.Application.Services
 
 var builder = WebApplication.CreateBuilder(args);
 
-DotNetEnv.Env.Load();
-
+if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER")))
+{
+    DotNetEnv.Env.Load(); 
+}
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Logging.ClearProviders();
