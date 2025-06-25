@@ -80,14 +80,14 @@ public class CityController : ControllerBase
         {
             if (files.Count == 0)
             {
-                return BadRequest("At least one hotel thumbnail is required.");
+                return BadRequest("At least one city media is required.");
             }
 
             var createdHotel = await _cityService.CreateAsync(cityDto, files);
 
             if (createdHotel == null)
             {
-                return StatusCode(409, "Failed to create hotel.");
+                return StatusCode(409, "Failed to create city.");
             }
 
             return CreatedAtAction(nameof(GetCityById), new { id = createdHotel.Id }, createdHotel);
@@ -117,7 +117,6 @@ public class CityController : ControllerBase
             var city = await _cityService.GetByIdAsync(id);
             if (city is null)
             {
-                _logger.LogWarning("Reservation not found.");
                 return NotFound();
             }
             return Ok(city);
@@ -150,7 +149,6 @@ public class CityController : ControllerBase
             var updatedCity = await _cityService.UpdateAsync(id, patchDocument);
             if (updatedCity is null)
             {
-                _logger.LogWarning("Reservation not found.");
                 return BadRequest();
             }
             return Ok(updatedCity);
@@ -182,7 +180,6 @@ public class CityController : ControllerBase
             var deletedCity = await _cityService.DeleteAsync(id);
             if (deletedCity is null)
             {
-                _logger.LogWarning("Reservation not found.");
                 return BadRequest();
             }
             return Ok(deletedCity);

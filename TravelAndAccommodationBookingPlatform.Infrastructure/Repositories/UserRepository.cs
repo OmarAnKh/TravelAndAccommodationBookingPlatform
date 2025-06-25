@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
+using TravelAndAccommodationBookingPlatform.Domain.Enums;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 using TravelAndAccommodationBookingPlatform.Infrastructure.Data;
 
@@ -67,6 +68,18 @@ public class UserRepository : IUserRepository
         return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
     }
 
+    public async Task<User?> UpdateUserRoleAsync(int userId, UserRole newRole)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+            return null;
+
+        user.Role = newRole;
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync();
+
+        return user;
+    }
     private static IQueryable<User> ApplyUserFilters(IQueryable<User> query, UserQueryParameters queryParams)
     {
         if (!string.IsNullOrWhiteSpace(queryParams.Username))
