@@ -5,6 +5,7 @@ using TravelAndAccommodationBookingPlatform.Application.Interfaces;
 using TravelAndAccommodationBookingPlatform.Domain.Common;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
+using TravelAndAccommodationBookingPlatform.Domain.Enums;
 using TravelAndAccommodationBookingPlatform.Domain.Interfaces;
 
 namespace TravelAndAccommodationBookingPlatform.Application.Services;
@@ -117,6 +118,34 @@ public class UserService : IUserService
         bool isValidPassword = BCrypt.Net.BCrypt.Verify(password, user.Password);
         return isValidPassword ? _mapper.Map<UserDto>(user) : null;
     }
+    public async Task<UserDto?> UpdateRoleAsync(int userId, UserRole newRole)
+    {
+        var user = await _userRepository.UpdateUserRoleAsync(userId, newRole);
+        if (user == null)
+            return null;
+
+        var userDto = _mapper.Map<UserDto>(user);
+        return userDto;
+    }
+    public async Task<UserDto?> GetUserByEmailAsync(string email)
+    {
+        var user = await _userRepository.GetByEmailAsync(email);
+        if (user is null)
+        {
+            return null;
+        }
+        return _mapper.Map<UserDto>(user);
+    }
+    public async Task<UserDto?> GetUserByUsernameAsync(string username)
+    {
+        var user = await _userRepository.GetByUsernameAsync(username);
+        if (user is null)
+        {
+            return null;
+        }
+        return _mapper.Map<UserDto>(user);
+    }
+
     private async Task<bool> UserExists(UserCreationDto entity)
     {
         var usernameExists = await _userRepository.GetByUsernameAsync(entity.Username);

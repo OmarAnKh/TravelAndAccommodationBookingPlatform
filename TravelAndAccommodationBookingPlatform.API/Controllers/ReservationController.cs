@@ -71,7 +71,6 @@ public class ReservationController : ControllerBase
             var reservation = await _reservationService.GetByIdAsync(id);
             if (reservation is null)
             {
-                _logger.LogWarning("Reservation not found.");
                 return NotFound();
             }
             return Ok(reservation);

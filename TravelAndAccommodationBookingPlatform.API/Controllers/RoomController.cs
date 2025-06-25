@@ -80,7 +80,7 @@ public class RoomController : ControllerBase
             }
             if (files.Count == 0)
             {
-                return BadRequest("At least one hotel thumbnail is required.");
+                return BadRequest("At least one room media is required.");
             }
 
             var room = await _roomService.CreateAsync(roomCreationDto, files);

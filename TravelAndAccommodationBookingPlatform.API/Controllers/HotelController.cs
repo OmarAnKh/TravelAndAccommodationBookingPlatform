@@ -77,7 +77,7 @@ public class HotelController : ControllerBase
         {
             if (thumbnails.Count == 0)
             {
-                return BadRequest("At least one hotel thumbnail is required.");
+                return BadRequest("At least one hotel media is required.");
             }
             var createdHotel = await _hotelService.CreateAsync(hotelDto, thumbnails);
 

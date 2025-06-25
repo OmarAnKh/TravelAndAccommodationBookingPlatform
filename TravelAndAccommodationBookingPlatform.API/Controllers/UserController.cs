@@ -11,6 +11,7 @@ using TravelAndAccommodationBookingPlatform.Application.DTOs.User;
 using TravelAndAccommodationBookingPlatform.Application.Interfaces;
 using TravelAndAccommodationBookingPlatform.Domain.Common.QueryParameters;
 using TravelAndAccommodationBookingPlatform.Domain.Entities;
+using TravelAndAccommodationBookingPlatform.Domain.Enums;
 
 namespace TravelAndAccommodationBookingPlatform.API.Controllers;
 
@@ -85,9 +86,10 @@ public class UserController : ControllerBase
     /// </summary>
     /// <param name="id">The ID of the user to retrieve.</param>
     /// <returns>The user DTO if found; otherwise, a 404 Not Found response.</returns>
-    [HttpGet("{id}")]
+    [HttpGet("id/{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserDto>> GetUser(int id)
     {
         try
@@ -101,11 +103,11 @@ public class UserController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Unexpected error occurred while getting user.");
-            return StatusCode(500, "An Unexpected error occurred.");
+            _logger.LogCritical(e, "Unexpected error occurred while getting user by ID.");
+            return StatusCode(500, "An unexpected error occurred.");
         }
-
     }
+
 
     /// <summary>
     /// Creates a new user.
@@ -124,7 +126,8 @@ public class UserController : ControllerBase
             {
                 return BadRequest();
             }
-            return Ok(createResult);
+            return CreatedAtAction(nameof(GetUser), new { id = createResult.Id }, createResult);
+
         }
         catch (Exception e)
         {
@@ -133,7 +136,59 @@ public class UserController : ControllerBase
         }
 
     }
+    /// <summary>
+    /// Retrieves a specific user by username.
+    /// </summary>
+    /// <param name="username">The username of the user to retrieve.</param>
+    /// <returns>The user DTO if found; otherwise, a 404 Not Found response.</returns>
+    [HttpGet("username/{username}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<UserDto>> GetUserByUsername(string username)
+    {
+        try
+        {
+            var user = await _userService.GetByUsernameAsync(username);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Unexpected error occurred while getting user by username.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+    }
 
+    /// <summary>
+    /// Retrieves a specific user by email.
+    /// </summary>
+    /// <param name="email">The email of the user to retrieve.</param>
+    /// <returns>The user DTO if found; otherwise, a 404 Not Found response.</returns>
+    [HttpGet("email/{email}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<UserDto>> GetUserByEmail(string email)
+    {
+        try
+        {
+            var user = await _userService.GetByEmailAsync(email);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Unexpected error occurred while getting user by email.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+    }
     /// <summary>
     /// Updates an existing user using a JSON Patch document.
     /// </summary>
@@ -163,10 +218,50 @@ public class UserController : ControllerBase
         }
 
     }
+    /// <summary>
+    /// Changes the role of the user to Admin.
+    /// </summary>
+    /// <param name="id">The ID of the user to promote.</param>
+    /// <returns>Updated user DTO if successful; otherwise, appropriate error responses.</returns>
+    [Authorize(Policy = "MustBeAnAdmin")]
+    [HttpPost("MakeAnAdmin/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<UserDto>> MakeAnAdmin(int id)
+    {
+        try
+        {
+            var user = await _userService.GetByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound($"User with ID {id} not found.");
+            }
+
+
+            var updatedUser = await _userService.UpdateRoleAsync(id, UserRole.Admin);
+            if (updatedUser == null)
+            {
+                return BadRequest("Failed to update user role.");
+            }
+
+            return Ok(updatedUser);
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, $"Unexpected error occurred while making user {id} an admin.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+    }
+
 
     /// <summary>
     /// Authenticates a user and returns JWT access & refresh tokens if credentials are valid.
     /// </summary>
+    /// <param name="username">The user username</param>
+    /// <param name="password">The user password </param>
+    /// <returns>An object of access token and refresh token when succeed</returns>
     [HttpPost("Login")]
     public async Task<ActionResult<object>> Login(string username, string password)
     {
